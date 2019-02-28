@@ -1,15 +1,15 @@
 type t = float array array
 
 (** constants *)
-let max_objects = Server.max_objects
+let max_objects = Constants.max_objects
 
-let max_x = Server.max_x
+let max_x = Constants.max_x
 
-let may_y = Server.max_y
+let may_y = Constants.max_y
 
-let min_x = Server.min_x
+let min_x = Constants.min_x
 
-let min_y = Server.min_y
+let min_y = Constants.min_y
 
 let origin = (0., 0.)
 

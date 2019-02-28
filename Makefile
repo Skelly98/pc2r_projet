@@ -1,5 +1,5 @@
 OCAML=ocamlc
-MLFLAGS=-thread
+MLFLAGS=-thread unix.cma threads.cma
 
 C=gcc
 CFLAGS= -g -lm
@@ -14,9 +14,9 @@ TARGET_CLIENT=Client
 # OCaml
 
 # sort interfaces by dependencies
-INTERFACES=$(wildcard $(SRC_SERVER)*.mli)
-OBJSI=$(patsubst $(SRC_SERVER)%.mli,$(OBJDIR)%.cmi,$(INTERFACES))
-OBJSO=$(patsubst $(SRC_SERVER)%.mli,$(OBJDIR)%.cmo,$(INTERFACES))
+INTERFACES=Constants.mli Object.mli Command.mli Arena.mli Server.mli
+OBJSI=$(patsubst %.mli,$(OBJDIR)%.cmi,$(INTERFACES))
+OBJSO=$(patsubst %.mli,$(OBJDIR)%.cmo,$(INTERFACES))
 
 # C
 
@@ -28,13 +28,13 @@ all: $(OBJSI) $(OBJSO) $(TARGET_SERVER) $(OBJSC) $(TARGET_CLIENT)
 # OCaml
 
 $(OBJDIR)%.cmi: $(SRC_SERVER)%.mli
-	$(OCAML) -I $(OBJDIR) -c $< $(MLFLAGS) -o $@
+	$(OCAML) $(MLFLAGS) -I $(OBJDIR) -c $< -o $@
 
 $(OBJDIR)%.cmo: $(SRC_SERVER)%.ml $(OBJDIR)%.cmi
-	$(OCAML) -I $(OBJDIR) -c $< $(MLFLAGS) -o $@
+	$(OCAML) $(MLFLAGS) -I $(OBJDIR) -c $< -o $@
 
 $(TARGET_SERVER): $(OBJSO)
-	$(OCAML) -I $(OBJDIR) $^ $(MLFLAGS) -o $@
+	$(OCAML) $(MLFLAGS) -I $(OBJDIR) -I $(SRC_SERVER) $^ -o $@
 
 # C
 

@@ -3,9 +3,9 @@ type t = {mutable id : int; (** mutable for easy delete *)
           mutable speed_x : float; mutable speed_y : float;
           mutable angle : int}
 
-let thrust_power = Server.thrust_power
+let thrust_power = Constants.thrust_power
 
-let turn_speed = Server.turn_speed
+let turn_speed = Constants.turn_speed
 
 (** default object with id = -1 *)
 let fake = {id = -1 ; coord_x = 0. ; coord_y = 0. ; speed_x = 0.; speed_y = 0.; angle = 0}
