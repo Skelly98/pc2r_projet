@@ -1,4 +1,5 @@
 type t =
+  |EXIT
   |CLOCK
   |ANTICLOCK
   |THRUST
