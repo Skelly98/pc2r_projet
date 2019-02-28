@@ -13,8 +13,17 @@ let fake = {id = -1 ; coord_x = 0. ; coord_y = 0. ; speed_x = 0.; speed_y = 0.; 
 (** simply set id to -1 *)
 let delete obj = obj.id <- -1
 
-let move obj = obj.coord_x <- obj.coord_x +. obj.speed_x;
-               obj.coord_y <- obj.coord_y +. obj.speed_y
+let move obj =
+  (match obj.coord_x +. obj.speed_x with
+  |x when x >= Constants.min_x && x < Constants.max_x -> obj.coord_x <- x 
+  |x when x < Constants.min_x -> obj.coord_x <- x +. Constants.max_x
+  |x when x >= Constants.max_x -> obj.coord_x <- x +. Constants.min_x);
+
+  match obj.coord_y +. obj.speed_y with
+  |y when y >= Constants.min_y && y < Constants.max_y -> obj.coord_y <- y 
+  |y when y < Constants.min_y -> obj.coord_y <- y +. Constants.max_y
+  |y when y >= Constants.max_y -> obj.coord_y <- y +. Constants.min_y
+
 
 let create id = {id=id; coord_x=0.; coord_y=0.;speed_x=0.;speed_y=0.;angle=0}
 
