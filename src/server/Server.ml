@@ -3,6 +3,10 @@ exception Client_exit
 
 let new_object_id = ref 0
 
+let max_players = Constants.max_players
+
+let players = Array.make max_players Player.fake
+
 let create_server port max_con =
   let sock = Unix.socket Unix.PF_INET Unix.SOCK_STREAM 0
   and addr = Unix.inet_addr_of_string "127.0.0.1"
@@ -23,14 +27,12 @@ let server_service (chans,id) =
   let inchan = fst chans
   and outchan = snd chans
   in
-    Arena.add_object id;
     try
       while true do
-        match Command.of_string (input_line inchan) with
-        |EXIT -> (Arena.remove_object id; raise Client_exit)
-        |CLOCK -> Arena.clock id
-        |ANTICLOCK -> Arena.anticlock id
-        |THRUST -> Arena.thrust id
+        match Command.FromClient.of_string (input_line inchan) with
+        |CONNECT(name) -> players.(id) <- Player.create name id
+        |EXIT(name) ->
+        |NEWCOM(angle,thrust) -> turn Arena.objects.(id) angle; accelerate Arena.objects.(id) thrust
       done
     with Client_exit -> ()
 

@@ -1,7 +1,7 @@
 type t = {mutable id: int; (** mutable for easy delete *)
           mutable coord_x: float; mutable coord_y: float;
           mutable speed_x: float; mutable speed_y: float;
-          mutable angle: int}
+          mutable angle: float}
 
 val thrust_power : float
 
@@ -19,12 +19,8 @@ val create : int -> t
 
 val pi : float
 
-val rad_of_degree : int -> float
-
 (** commands *)
 
-val clock : t -> unit
+val turn : t -> float -> unit
 
-val anticlock : t -> unit
-
-val thrust : t -> unit
+val accelerate : t -> int -> unit
