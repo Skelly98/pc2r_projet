@@ -16,10 +16,16 @@ type t =
   |DENIED
   |NEWPLAYER of string (** user *)
   |PLAYERLEFT of string (** user *)
-  |SESSION of (string * (float * float)) list (** coords *)
+  |SESSION of (string * (float * float)) list * (float * float) (** coords/coord *)
   |WINNER of (string * int) list (** scores *)
-  |TICK of (string * (float * float) * (float * float)) list (** vcoords *)
+  |TICK of (string * (float * float) * (float * float) * float ) list (** vcoords *)
   |NEWOBJ of (float * float) * (string * int) list (** coord/scores *)
+
+val string_of_scores : (string * int) list -> string
+
+val string_of_coords : (string * (float * float)) list -> string
+
+val string_of_vcoords : (string * (float * float) * (float * float) * float) list -> string
 
 val to_string : t -> string
 
