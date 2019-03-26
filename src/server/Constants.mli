@@ -14,3 +14,5 @@ val height : float
 val thrust_power : float
 
 val turn_speed : int
+
+val phase : string ref

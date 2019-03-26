@@ -5,7 +5,7 @@ let new_object_id = ref 0
 
 let max_players = Constants.max_players
 
-let players = Array.make max_players Player.fake
+let players = Array.make max_players ((stdin,stdout),Player.fake)
 
 let create_server port max_con =
   let sock = Unix.socket Unix.PF_INET Unix.SOCK_STREAM 0
@@ -23,6 +23,11 @@ let server_process sock service =
       new_object_id := !new_object_id + 1
   done
 
+let message ?(id = (-1)) cmd =
+  match id with
+  |(-1) -> Array.iter (fun x -> output_string (snd (fst x)) (Command.FromServer.to_string cmd)) players
+  |id -> output_string (snd (fst players.(id))) (Command.FromServer.to_string cmd)
+
 let server_service (chans,id) =
   let inchan = fst chans
   and outchan = snd chans
@@ -30,9 +35,9 @@ let server_service (chans,id) =
     try
       while true do
         match Command.FromClient.of_string (input_line inchan) with
-        |CONNECT(name) -> players.(id) <- Player.create name id
-        |EXIT(name) ->
-        |NEWCOM(angle,thrust) -> turn Arena.objects.(id) angle; accelerate Arena.objects.(id) thrust
+        |CONNECT(name) -> players.(id) <-(inchan,outchan),Player.create name id
+        |EXIT(name) -> message (PLAYERLEFT(name))
+        |NEWCOM(angle,thrust) -> (Arena.turn id angle; Arena.accelerate id thrust)
       done
     with Client_exit -> ()
 

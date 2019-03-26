@@ -11,3 +11,5 @@ let height = 5.
 let thrust_power = 0.05
 
 let turn_speed = 5
+
+let phase = ref "attente"
