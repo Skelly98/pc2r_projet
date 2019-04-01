@@ -4,6 +4,7 @@ type t =
   |CONNECT of string (** user *)
   |EXIT of string (** user *)
   |NEWCOM of float * int (** angle/thrust *)
+  |UNRECOGNIZED
 
 let of_string cmd =
   match String.split_on_char '/' cmd with
@@ -16,7 +17,7 @@ let of_string cmd =
                           else match String.split_on_char 'A' cmd with
                                 |[to_float; t_to_int] -> NEWCOM( (float_of_string to_float),
                                                                  (int_of_string (String.sub t_to_int 1 (String.length t_to_int)))))
-
+  |_ -> UNRECOGNIZED
 
 end
 
@@ -58,7 +59,7 @@ type t =
 
 let to_string cmd =
   match cmd with
-  |WELCOME(user, scores, (x,y)) -> Printf.sprintf "WELCOME/%s/%sX%fY%f/" !Constants.phase (string_of_scores scores) x y
+  |WELCOME(user, scores, (x,y)) -> Printf.sprintf "WELCOME/%s/%sX%fY%f/" !Values.phase (string_of_scores scores) x y
   |DENIED -> "DENIED/"
   |NEWPLAYER user -> "NEWPLAYER/" ^ user ^ "/"
   |PLAYERLEFT user -> "PLAYERLEFT/" ^ user ^ "/"

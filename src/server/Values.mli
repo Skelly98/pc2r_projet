@@ -1,4 +1,4 @@
-(** constants *)
+(** Values *)
 
 val server_tickrate : float
 
@@ -6,6 +6,8 @@ val server_tickrate : float
 val max_objects : int
 
 val max_players : int
+
+val max_score : int
 
 val width : float
 

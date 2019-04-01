@@ -4,6 +4,7 @@ type t =
   |CONNECT of string (** user *)
   |EXIT of string (** user *)
   |NEWCOM of float * int (** angle/thrust *)
+  |UNRECOGNIZED
 
 val of_string : string -> t
 

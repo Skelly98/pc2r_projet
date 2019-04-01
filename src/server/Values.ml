@@ -4,6 +4,8 @@ let max_objects = 1000
 
 let max_players = 20
 
+let max_score = 100
+
 let width = 5.
 
 let height = 5.

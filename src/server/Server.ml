@@ -3,7 +3,11 @@ exception Client_exit
 
 let new_object_id = ref 0
 
-let max_players = Constants.max_players
+let starting = ref false
+
+let ended = ref false
+
+let max_players = Values.max_players
 
 let players = Array.make max_players ((stdin,stdout),Player.fake)
 
@@ -20,6 +24,7 @@ let server_process sock service =
     let (s, caller) = Unix.accept sock
     in
       ignore(Thread.create service ((Unix.in_channel_of_descr s,Unix.out_channel_of_descr s),!new_object_id));
+      if (not !starting) then starting := true;
       new_object_id := !new_object_id + 1
   done
 
@@ -35,15 +40,40 @@ let server_service (chans,id) =
     try
       while true do
         match Command.FromClient.of_string (input_line inchan) with
-        |CONNECT(name) -> players.(id) <-(inchan,outchan),Player.create name id
-        |EXIT(name) -> message (PLAYERLEFT(name))
-        |NEWCOM(angle,thrust) -> (Arena.turn id angle; Arena.accelerate id thrust)
+        |Command.FromClient.CONNECT(name) -> players.(id) <- ((inchan,outchan), Player.create name id)
+        |Command.FromClient.EXIT(name) -> (players.(id) <- ((stdin,stdout),Player.fake); message (Command.FromServer.PLAYERLEFT(name)); raise Client_exit)
+        |Command.FromClient.NEWCOM(angle,thrust) -> (Arena.turn id angle; Arena.accelerate id thrust)
+        |Command.FromClient.UNRECOGNIZED -> () (** ignore unrecognized command *)
       done
     with Client_exit -> ()
 
+let game () =
+  while true do
+    while (not !starting) do
+      Thread.delay 1.
+    done;
+    Thread.delay 20.;
+    while (not !ended) do
+      let start = Sys.time () in
+      (** check scores *)
+      for i = 0 to max_players do
+        if (snd players.(i)).score >= Values.max_score then ended := true
+      done;
+      (** move objects *)
+      Arena.move_all ();
+      (** sleep during TICK - calcul_time *)
+      let calcul_time = Sys.time () -. start in
+      Thread.delay (Values.server_tickrate -. calcul_time);
+      (** send message TICK to everyone *)
+      message (Command.FromServer.TICK(List.map (fun ((_,_),p) -> Player.vcoord p) (Array.to_list players)))
+    done;
+  done
+
+let server_game () =
+  ignore(Thread.create game ()) 
+
 let _ =
-  let port = int_of_string Sys.argv.(1)
-  in
-  let sock = create_server port 4 ;
-  in
-    server_process sock server_service
+  let port = int_of_string Sys.argv.(1) in
+  let sock = create_server port 4 ; in
+  server_game ();
+  server_process sock server_service

@@ -3,9 +3,9 @@ type t = {mutable id : int; (** mutable for easy delete *)
           mutable speed_x : float; mutable speed_y : float;
           mutable angle : float}
 
-let thrust_power = Constants.thrust_power
+let thrust_power = Values.thrust_power
 
-let turn_speed = Constants.turn_speed
+let turn_speed = Values.turn_speed
 
 (** default object with id = -1 *)
 let fake = {id = -1 ; coord_x = 0. ; coord_y = 0. ; speed_x = 0.; speed_y = 0.; angle = 0.}
@@ -15,15 +15,14 @@ let delete obj = obj.id <- -1
 
 let move obj =
   (match obj.coord_x +. obj.speed_x with
-  |x when x >= -.Constants.width && x < Constants.width -> obj.coord_x <- x
-  |x when x < -.Constants.width -> obj.coord_x <- x +. 2. *. Constants.width
-  |x when x >= Constants.width -> obj.coord_x <- x +. 2. *. -.Constants.width);
+  |x when x >= -.Values.width && x < Values.width -> obj.coord_x <- x
+  |x when x < -.Values.width -> obj.coord_x <- x +. 2. *. Values.width
+  |x -> obj.coord_x <- x +. 2. *. -.Values.width); (** when x >= Values.width  *)
 
   match obj.coord_y +. obj.speed_y with
-  |y when y >= -.Constants.height && y < Constants.height -> obj.coord_y <- y
-  |y when y < -.Constants.height -> obj.coord_y <- y +. 2. *. Constants.height
-  |y when y >= Constants.height -> obj.coord_y <- y +. 2. *. -.Constants.height
-
+  |y when y >= -.Values.height && y < Values.height -> obj.coord_y <- y
+  |y when y < -.Values.height -> obj.coord_y <- y +. 2. *. Values.height
+  |y -> obj.coord_y <- y +. 2. *. -.Values.height (** when y >= Values.height  *)
 
 let create id = {id=id; coord_x=0.; coord_y=0.;speed_x=0.;speed_y=0.;angle=0.}
 

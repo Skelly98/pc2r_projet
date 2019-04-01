@@ -1,7 +1,7 @@
 type t = float array array
 
-(** constants *)
-let max_objects = Constants.max_objects
+(** Values *)
+let max_objects = Values.max_objects
 
 (** all the objects in the game *)
 let objects = Array.make max_objects Object.fake

@@ -14,7 +14,7 @@ TARGET_CLIENT=Client
 # OCaml
 
 # sort interfaces by dependencies
-INTERFACES=Constants.mli Object.mli Command.mli Arena.mli Player.mli Server.mli
+INTERFACES=Values.mli Object.mli Command.mli Arena.mli Player.mli Server.mli
 OBJSI=$(patsubst %.mli,$(OBJDIR)%.cmi,$(INTERFACES))
 OBJSO=$(patsubst %.mli,$(OBJDIR)%.cmo,$(INTERFACES))
 
