@@ -6,9 +6,9 @@ let max_players = 20
 
 let max_score = 100
 
-let width = 5.
+let half_width = 5.
 
-let height = 5.
+let half_height = 5.
 
 let thrust_power = 0.05
 

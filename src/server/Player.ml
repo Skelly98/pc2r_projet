@@ -10,6 +10,6 @@ let coords p = (Arena.objects.(p.ship_id).coord_x, Arena.objects.(p.ship_id).coo
 
 let speed p = (Arena.objects.(p.ship_id).speed_x, Arena.objects.(p.ship_id).speed_y)
 
-let vcoord p = (p.name,(coords p),(speed p),Arena.objects.(p.ship_id).angle)
+let vcoords p = (p.name,(coords p),(speed p),Arena.objects.(p.ship_id).angle)
 
 let name p = p.name

@@ -9,9 +9,9 @@ val max_players : int
 
 val max_score : int
 
-val width : float
+val half_width : float
 
-val height : float
+val half_height : float
 
 val thrust_power : float
 

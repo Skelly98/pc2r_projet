@@ -8,6 +8,6 @@ val coords : t -> float * float
 
 val speed : t -> float * float
 
-val vcoord : t -> string * (float * float) * (float * float) * float
+val vcoords : t -> string * (float * float) * (float * float) * float
 
 val name : t -> string

@@ -13,6 +13,8 @@ val fake : t
 (** simply set id to -1 *)
 val delete : t -> unit
 
+val coords : t -> float * float 
+
 val move : t -> unit
 
 val create : int -> t

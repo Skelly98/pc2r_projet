@@ -2,6 +2,10 @@
 Arènes Vectorielles Synchrones
 
 TODO :
-  add the objective somewhere (submodule of Object ?)  
-  Command.ml (Command.FromServer.to_string)  
-  Server.mli, Server.ml  
+  Server :  
+    Collison system  
+    How to take an objective (Arena.objects.(0))  
+    Everything else in the server should be ok  
+
+  Client :  
+    Everything  
