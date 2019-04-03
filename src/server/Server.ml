@@ -1,7 +1,6 @@
-(* compilation: ocamlc -thread unix.cma threads.cma echoserver2.ml -o echoserver2 *)
-exception Client_exit
-
 open Player
+
+exception Client_exit
 
 let new_player_id = ref 0
 
@@ -11,7 +10,7 @@ let ended = ref false
 
 let max_players = Values.max_players
 
-let players = Array.make max_players ((stdin,stdout),Player.fake)
+let players = Array.make max_players ((stdin,stdout),Player.default) (** stdin and stdout for default chans *)
 
 let scores () = List.filter (fun (name,score) -> name <> "") (List.map (fun ((_,_),p) -> (p.name,p.score)) (Array.to_list players))
 
@@ -61,7 +60,7 @@ let server_service (chans,id) =
           end
         |Command.FromClient.EXIT(name) ->
           begin
-            players.(id) <- ((stdin,stdout),Player.fake);
+            players.(id) <- ((stdin,stdout),Player.default);
             message (Command.FromServer.PLAYERLEFT(name)); raise Client_exit
           end
         |Command.FromClient.NEWCOM(angle,thrust) -> (Arena.turn id angle; Arena.accelerate id thrust)
@@ -92,6 +91,8 @@ let game () =
           Arena.add_object 0;
           message (Command.FromServer.NEWOBJ(Object.coords Arena.objects.(0), scores ()))
         end;
+      (** check collisions *)
+      (** TODO *)
       (** move objects *)
       Arena.move_all ();
       (** sleep during server_tickrate - calcul_time *)

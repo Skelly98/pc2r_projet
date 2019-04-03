@@ -2,7 +2,7 @@ type t = {name: string; ship_id: int; mutable score: int}
 
 val create : string -> int -> t
 
-val fake : t
+val default : t
 
 val coords : t -> float * float
 

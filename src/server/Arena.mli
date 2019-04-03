@@ -1,8 +1,3 @@
-type t = float array array
-
-(** the number of objects the server can manage *)
-val max_objects : int
-
 (** all the objects in the game *)
 val objects : Object.t array
 
