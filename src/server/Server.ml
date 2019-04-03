@@ -12,7 +12,15 @@ let max_players = Values.max_players
 
 let players = Array.make max_players ((stdin,stdout),Player.default) (** stdin and stdout for default chans *)
 
-let scores () = List.filter (fun (name,score) -> name <> "") (List.map (fun ((_,_),p) -> (p.name,p.score)) (Array.to_list players))
+let asteroids_ids = Array.make Values.nb_asteroids (Arena.add_object_no_id Values.asteroid_mass Values.asteroid_radius)
+
+let real_players () = List.filter (fun ((_,_),p) -> p.ship_id <> -1) (Array.to_list players)
+
+let objective = ref (Object.create 0 0. Values.objective_radius)
+
+let scores () = List.map (fun ((_,_),p) -> (p.name,p.score)) (real_players ())
+
+let asteroids_coords () = List.map (fun x -> Arena.objects.(x).coord_x,Arena.objects.(x).coord_y) (List.filter (fun x -> x <> -1) (Array.to_list asteroids_ids))
 
 let message ?(id = (-1)) cmd =
   match id with
@@ -55,7 +63,8 @@ let server_service (chans,id) =
         |Command.FromClient.CONNECT(name) ->
           begin
             players.(id) <- ((inchan,outchan), Player.create name id);
-            message ~id:id (Command.FromServer.WELCOME(name,(scores ()), Player.coords (snd players.(id))));
+            message ~id:id (Command.FromServer.WELCOME(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords ()));
+            if !Values.phase == "jeu" then message ~id:id (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords !objective, asteroids_coords ()));
             message (Command.FromServer.NEWPLAYER(name))
           end
         |Command.FromClient.EXIT(name) ->
@@ -73,8 +82,9 @@ let game () =
     while (not !starting) do
       Thread.delay 1.
     done;
+    Values.phase := "jeu";
     Thread.delay 20.;
-    message (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (Array.to_list players), Object.coords Arena.objects.(0)));
+    message (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords !objective, asteroids_coords ()));
     while (not !ended) do
       let start = Sys.time () in
       (** check scores *)
@@ -86,21 +96,25 @@ let game () =
           end
       done;
       (** check objectif *)
-      if (Arena.objects.(0).id = -1)
-        then begin
-          Arena.add_object 0;
-          message (Command.FromServer.NEWOBJ(Object.coords Arena.objects.(0), scores ()))
-        end;
+      let at_least_one = ref false in
+      (** we give points to all players touching the objective *)
+      Array.iter (fun ((_,_),p) -> if (Player.touching p !objective) then (at_least_one := true;  p.score <- p.score + 1)) players;
+      if !at_least_one then objective := (Object.create 0 0. Values.objective_radius);
       (** check collisions *)
-      (** TODO *)
+      Array.iter (fun ((_,_),p) -> Array.iter (Object.collision Arena.objects.(p.ship_id)) Arena.objects) players;
       (** move objects *)
       Arena.move_all ();
-      (** sleep during server_tickrate - calcul_time *)
-      let calcul_time = Sys.time () -. start in
-      Thread.delay (Values.server_tickrate -. calcul_time);
+      (** sleep during 1 / server_tickrate - calcul_time *)
+      let wait_time = 1. /. Values.server_tickrate -. (Sys.time () -. start) in
+      (** if wait_time < 0, Values.server_tickrate is too big *)
+      (if (wait_time > 0.)
+        then Thread.delay (wait_time));
       (** send message TICK to everyone *)
-      message (Command.FromServer.TICK(List.map (fun ((_,_),p) -> Player.vcoords p) (Array.to_list players)))
+      message (Command.FromServer.TICK(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ())))
     done;
+    starting := false;
+    ended := false;
+    Values.phase := "attente";
   done
 
 let _ =

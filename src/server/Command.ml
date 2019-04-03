@@ -1,8 +1,14 @@
+type user = string
+type scores = (string * int) list
+type coord = (float * float)
+type coords = (string * (float * float)) list
+type vcoords = (string * (float * float) * (float * float) * float) list
+
 module FromClient = struct
 
 type t =
-  |CONNECT of string (** user *)
-  |EXIT of string (** user *)
+  |CONNECT of user
+  |EXIT of user
   |NEWCOM of float * int (** angle/thrust *)
   |UNRECOGNIZED
 
@@ -23,6 +29,16 @@ end
 
 module FromServer = struct
 
+type t =
+  |WELCOME of user * scores * coord * (float * float) list
+  |DENIED
+  |NEWPLAYER of user
+  |PLAYERLEFT of user
+  |SESSION of coords * coord * (float * float) list
+  |WINNER of scores
+  |TICK of vcoords
+  |NEWOBJ of coord * scores
+
 let string_of_scores scores =
   let rec loop scores acc =
     match scores with
@@ -39,6 +55,14 @@ let string_of_coords coords =
     |(user,(x,y))::tl -> loop tl (Printf.sprintf "%s%s:X%fY%f|" acc user x y)
   in loop coords ""
 
+let string_of_coords_no_name coords =
+  let rec loop coords acc =
+    match coords with
+    |[] -> acc
+    |(x,y)::[] -> Printf.sprintf "%s:X%fY%f" acc x y
+    |(x,y)::tl -> loop tl (Printf.sprintf "%s:X%fY%f|" acc x y)
+  in loop coords ""
+
 let string_of_vcoords vcoords =
   let rec loop vcoords acc =
     match vcoords with
@@ -47,23 +71,13 @@ let string_of_vcoords vcoords =
     |(user,(x,y),(vx,vy),angle)::tl -> loop tl (Printf.sprintf "%s%s:X%fY%f|VX%fVY%f|T%f|" acc user x y vx vy angle)
   in loop vcoords ""
 
-type t =
-  |WELCOME of string * (string * int) list * (float * float) (** user/scores/coord *)
-  |DENIED
-  |NEWPLAYER of string (** user *)
-  |PLAYERLEFT of string (** user *)
-  |SESSION of (string * (float * float)) list * (float * float) (** coords/coord *)
-  |WINNER of (string * int) list (** scores *)
-  |TICK of (string * (float * float) * (float * float) * float) list (** vcoords *)
-  |NEWOBJ of (float * float) * (string * int) list (** coord/scores *)
-
 let to_string cmd =
   match cmd with
-  |WELCOME(user, scores, (x,y)) -> Printf.sprintf "WELCOME/%s/%sX%fY%f/" !Values.phase (string_of_scores scores) x y
+  |WELCOME(user, scores, (x,y), coords) -> Printf.sprintf "WELCOME/%s/%sX%fY%f/%s/" !Values.phase (string_of_scores scores) x y (string_of_coords_no_name coords)
   |DENIED -> "DENIED/"
   |NEWPLAYER user -> "NEWPLAYER/" ^ user ^ "/"
   |PLAYERLEFT user -> "PLAYERLEFT/" ^ user ^ "/"
-  |SESSION(coords, (x,y)) -> Printf.sprintf "SESSION/%s/X%fY%f/" (string_of_coords coords) x y
+  |SESSION(coords_players, (x,y), coords_asteroids) -> Printf.sprintf "SESSION/%s/X%fY%f/%s/" (string_of_coords coords_players) x y (string_of_coords_no_name coords_asteroids)
   |WINNER scores -> "WINNER/" ^ (string_of_scores scores)
   |TICK vcoords -> "TICK/" ^ (string_of_vcoords vcoords)
   |NEWOBJ((x,y), scores) ->  Printf.sprintf "NEWOBJ/X%fY%f/%s" x y (string_of_scores scores)

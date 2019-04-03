@@ -2,14 +2,14 @@ type t = {mutable id : int; (** mutable for easy delete *)
           mtx : Mutex.t;
           mutable coord_x : float; mutable coord_y : float;
           mutable speed_x : float; mutable speed_y : float;
-          mutable angle : float}
+          mutable angle : float; mass : float; radius : float}
 
 let thrust_power = Values.thrust_power
 
 let turn_speed = Values.turn_speed
 
 (** default object with id = -1 *)
-let default = {id = -1 ; mtx = Mutex.create () ; coord_x = 0. ; coord_y = 0. ; speed_x = 0.; speed_y = 0.; angle = 0.}
+let default = {id = -1 ; mtx = Mutex.create () ; coord_x = 0. ; coord_y = 0. ; speed_x = 0.; speed_y = 0.; angle = 0.; mass = 0.; radius = 0.}
 
 (** simply set id to -1 *)
 let delete obj =
@@ -35,14 +35,11 @@ let move obj =
   end;
   Mutex.unlock obj.mtx
 
-let create id = {id=id; mtx=Mutex.create ();
-                 coord_x=((Random.float (2. *. Values.half_width)) -. Values.half_width);
-                 coord_y=((Random.float (2. *. Values.half_height)) -. Values.half_height);
-                 speed_x=0.;speed_y=0.;angle=0.}
-
-let pi = 4. *. atan 1.
-
-(** commands *)
+let create id mass radius =
+  {id=id; mtx=Mutex.create ();
+  coord_x=((Random.float (2. *. Values.half_width)) -. Values.half_width);
+  coord_y=((Random.float (2. *. Values.half_height)) -. Values.half_height);
+  speed_x=0.; speed_y=0.; angle=0.; mass=mass; radius=radius}
 
 let turn obj angle =
   Mutex.lock obj.mtx;
@@ -54,3 +51,18 @@ let accelerate obj thrust =
   obj.speed_x <- obj.speed_x +. (float_of_int thrust) *. (cos obj.angle);
   obj.speed_y <- obj.speed_y +. (float_of_int thrust) *. (sin obj.angle);
   Mutex.unlock obj.mtx
+
+(** only used inside collision so no mutex *)
+let touching obj1 obj2 =
+  obj1.id <> obj2.id && ((obj1.coord_x -. obj2.coord_x) ** 2. +. (obj1.coord_x -. obj2.coord_x) ** 2. <= (obj1.radius +. obj2.radius) ** 2.)
+
+(** no interblocage as this is the only function using 2 mutex *)
+let collision obj1 obj2 =
+  Mutex.lock obj1.mtx;
+  Mutex.lock obj2.mtx;
+  (if touching obj1 obj2
+    then begin
+    (** TODO *)
+    end);
+  Mutex.unlock obj2.mtx;
+  Mutex.unlock obj1.mtx

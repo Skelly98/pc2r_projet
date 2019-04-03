@@ -10,4 +10,6 @@ val speed : t -> float * float
 
 val vcoords : t -> string * (float * float) * (float * float) * float
 
+val touching : t -> Object.t -> bool
+
 val name : t -> string

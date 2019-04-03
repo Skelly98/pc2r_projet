@@ -10,6 +10,15 @@ val ended : bool ref
 
 val players : ((in_channel * out_channel) * Player.t) array
 
+val asteroids_ids : int array
+
+(** return the players with a ship_id *)
+val real_players : unit -> ((in_channel * out_channel) * Player.t) list
+
+val objective : Object.t ref
+
+val scores : unit -> Command.scores
+
 (** send a command to one/all players *)
 val message : ?id:int -> Command.FromServer.t -> unit
 
