@@ -20,7 +20,11 @@ let objective = ref (Object.create 0 0. Values.objective_radius)
 
 let scores () = List.map (fun ((_,_),p) -> (p.name,p.score)) (real_players ())
 
-let asteroids_coords () = List.map (fun x -> Arena.objects.(x).coord_x,Arena.objects.(x).coord_y) (List.filter (fun x -> x <> -1) (Array.to_list asteroids_ids))
+let asteroids_coords_comp () = List.map (fun x -> Object.coords Arena.objects.(x)) (List.filter (fun x -> x <> -1) (Array.to_list asteroids_ids))
+
+let asteroids_coords () = List.map (fun x -> (string_of_int x),Object.coords Arena.objects.(x)) (List.filter (fun x -> x <> -1) (Array.to_list asteroids_ids))
+
+let asteroids_vcoords () = List.map (fun x -> (string_of_int x),Object.coords Arena.objects.(x),(Arena.objects.(x).speed_x,Arena.objects.(x).speed_y),Arena.objects.(x).angle) (List.filter (fun x -> x <> -1) (Array.to_list asteroids_ids))
 
 let message ?(id = (-1)) cmd =
   match id with
@@ -63,8 +67,14 @@ let server_service (chans,id) =
         |Command.FromClient.CONNECT(name) ->
           begin
             players.(id) <- ((inchan,outchan), Player.create name id);
-            message ~id:id (Command.FromServer.WELCOME(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords ()));
-            if !Values.phase == "jeu" then message ~id:id (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords !objective, asteroids_coords ()));
+            (if !Values.compatibility_mode
+            then begin
+              message ~id:id (Command.FromServer.WELCOME_COMP(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords_comp ()));
+              if !Values.phase == "jeu" then message ~id:id (Command.FromServer.SESSION_COMP(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords !objective, asteroids_coords_comp ()))
+            end else begin
+              message ~id:id (Command.FromServer.WELCOME(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords ()));
+              if !Values.phase == "jeu" then message ~id:id (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords !objective, asteroids_coords ()))
+            end);
             message (Command.FromServer.NEWPLAYER(name))
           end
         |Command.FromClient.EXIT(name) ->
@@ -79,6 +89,7 @@ let server_service (chans,id) =
 
 let game () =
   while true do
+    (if (List.length (real_players ())) > 0 then starting := true);
     while (not !starting) do
       Thread.delay 1.
     done;
@@ -103,14 +114,18 @@ let game () =
       (** check collisions *)
       Array.iter (fun ((_,_),p) -> Array.iter (Object.collision Arena.objects.(p.ship_id)) Arena.objects) players;
       (** move objects *)
-      Arena.move_all ();
+      (if !Values.compatibility_mode
+        then Arena.move_all_ids (List.map (fun ((_,_),p) -> p.ship_id) (real_players ()))
+        else Arena.move_all ());
       (** sleep during 1 / server_tickrate - calcul_time *)
       let wait_time = 1. /. Values.server_tickrate -. (Sys.time () -. start) in
       (** if wait_time < 0, Values.server_tickrate is too big *)
       (if (wait_time > 0.)
         then Thread.delay (wait_time));
       (** send message TICK to everyone *)
-      message (Command.FromServer.TICK(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ())))
+      (if !Values.compatibility_mode
+        then message (Command.FromServer.TICK_COMP(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ())))
+        else message (Command.FromServer.TICK(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ()), asteroids_vcoords ())))
     done;
     starting := false;
     ended := false;
@@ -118,7 +133,20 @@ let game () =
   done
 
 let _ =
-  let port = int_of_string Sys.argv.(1) in
-  let sock = create_server port 4 ; in
-  ignore(Thread.create game ());
-  server_process sock server_service
+  match Array.length Sys.argv with
+  |2 ->
+  begin
+    let port = int_of_string Sys.argv.(1) in
+    let sock = create_server port 4 ; in
+    ignore(Thread.create game ());
+    server_process sock server_service
+  end
+  |3 when Sys.argv.(2) = "-comp" ->
+  begin
+    Values.compatibility_mode := true;
+    let port = int_of_string Sys.argv.(1) in
+    let sock = create_server port 4 ; in
+    ignore(Thread.create game ());
+    server_process sock server_service
+  end
+  |_ -> print_endline "usage :\n\t- server <port>\n\t- server <port> -comp"

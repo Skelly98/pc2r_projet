@@ -27,3 +27,5 @@ let asteroid_mass = 10000.
 let asteroid_radius = 1.
 
 let phase = ref "attente"
+
+let compatibility_mode = ref false

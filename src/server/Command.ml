@@ -30,13 +30,16 @@ end
 module FromServer = struct
 
 type t =
-  |WELCOME of user * scores * coord * (float * float) list
+  |WELCOME_COMP of user * scores * coord * (float * float) list
+  |WELCOME of user * scores * coord * coords
   |DENIED
   |NEWPLAYER of user
   |PLAYERLEFT of user
-  |SESSION of coords * coord * (float * float) list
+  |SESSION_COMP of coords * coord * (float * float) list
+  |SESSION of coords * coord * coords
   |WINNER of scores
-  |TICK of vcoords
+  |TICK_COMP of vcoords
+  |TICK of vcoords * vcoords
   |NEWOBJ of coord * scores
 
 let string_of_scores scores =
@@ -59,8 +62,8 @@ let string_of_coords_no_name coords =
   let rec loop coords acc =
     match coords with
     |[] -> acc
-    |(x,y)::[] -> Printf.sprintf "%s:X%fY%f" acc x y
-    |(x,y)::tl -> loop tl (Printf.sprintf "%s:X%fY%f|" acc x y)
+    |(x,y)::[] -> Printf.sprintf "%sX%fY%f" acc x y
+    |(x,y)::tl -> loop tl (Printf.sprintf "%sX%fY%f|" acc x y)
   in loop coords ""
 
 let string_of_vcoords vcoords =
@@ -73,13 +76,16 @@ let string_of_vcoords vcoords =
 
 let to_string cmd =
   match cmd with
-  |WELCOME(user, scores, (x,y), coords) -> Printf.sprintf "WELCOME/%s/%sX%fY%f/%s/" !Values.phase (string_of_scores scores) x y (string_of_coords_no_name coords)
+  |WELCOME_COMP(user, scores, (x,y), coords) -> Printf.sprintf "WELCOME/%s/%sX%fY%f/%s/" !Values.phase (string_of_scores scores) x y (string_of_coords_no_name coords)
+  |WELCOME(user, scores, (x,y), coords) -> Printf.sprintf "WELCOME/%s/%sX%fY%f/%s/" !Values.phase (string_of_scores scores) x y (string_of_coords coords)
   |DENIED -> "DENIED/"
   |NEWPLAYER user -> "NEWPLAYER/" ^ user ^ "/"
   |PLAYERLEFT user -> "PLAYERLEFT/" ^ user ^ "/"
-  |SESSION(coords_players, (x,y), coords_asteroids) -> Printf.sprintf "SESSION/%s/X%fY%f/%s/" (string_of_coords coords_players) x y (string_of_coords_no_name coords_asteroids)
+  |SESSION_COMP(coords_players, (x,y), coords_asteroids) -> Printf.sprintf "SESSION/%s/X%fY%f/%s/" (string_of_coords coords_players) x y (string_of_coords_no_name coords_asteroids)
+  |SESSION(coords_players, (x,y), coords_asteroids) -> Printf.sprintf "SESSION/%s/X%fY%f/%s/" (string_of_coords coords_players) x y (string_of_coords coords_asteroids)
   |WINNER scores -> "WINNER/" ^ (string_of_scores scores)
-  |TICK vcoords -> "TICK/" ^ (string_of_vcoords vcoords)
+  |TICK_COMP vcoords -> "TICK/" ^ (string_of_vcoords vcoords)
+  |TICK(vcoords_players, vcoords_asteroids) -> "TICK/" ^ (string_of_vcoords vcoords_players) ^ (string_of_vcoords vcoords_asteroids)
   |NEWOBJ((x,y), scores) ->  Printf.sprintf "NEWOBJ/X%fY%f/%s" x y (string_of_scores scores)
 
 end

@@ -13,6 +13,8 @@ let refresh_id () =
 (** Array.iter of move *)
 let move_all () = Array.iter Object.move objects
 
+let move_all_ids ids = List.iter (fun id -> Object.move objects.(id)) ids
+
 (** create a new object with given id *)
 let add_object id mass radius = objects.(id) <- Object.create id mass radius
 

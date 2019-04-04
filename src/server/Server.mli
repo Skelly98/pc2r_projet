@@ -19,6 +19,12 @@ val objective : Object.t ref
 
 val scores : unit -> Command.scores
 
+val asteroids_coords_comp : unit -> (float * float) list
+
+val asteroids_coords : unit -> Command.coords
+
+val asteroids_vcoords : unit -> Command.vcoords
+
 (** send a command to one/all players *)
 val message : ?id:int -> Command.FromServer.t -> unit
 

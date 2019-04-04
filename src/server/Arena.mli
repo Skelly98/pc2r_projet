@@ -9,6 +9,8 @@ val refresh_id : unit -> bool
 (** Array.iter of move *)
 val move_all : unit -> unit
 
+val move_all_ids : int list -> unit
+
 (** create a new object with given id *)
 val add_object : int -> float -> float -> unit
 

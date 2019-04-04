@@ -30,3 +30,5 @@ val asteroid_mass : float
 val asteroid_radius : float
 
 val phase : string ref
+
+val compatibility_mode : bool ref

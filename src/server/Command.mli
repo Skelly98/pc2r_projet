@@ -19,14 +19,17 @@ end
 module FromServer : sig
 
 type t =
-  |WELCOME of user * scores * coord * (float * float) list
-  |DENIED
-  |NEWPLAYER of user
-  |PLAYERLEFT of user
-  |SESSION of coords * coord * (float * float) list
-  |WINNER of scores
-  |TICK of vcoords
-  |NEWOBJ of coord * scores
+|WELCOME_COMP of user * scores * coord * (float * float) list
+|WELCOME of user * scores * coord * coords
+|DENIED
+|NEWPLAYER of user
+|PLAYERLEFT of user
+|SESSION_COMP of coords * coord * (float * float) list
+|SESSION of coords * coord * coords
+|WINNER of scores
+|TICK_COMP of vcoords
+|TICK of vcoords * vcoords
+|NEWOBJ of coord * scores
 
 val string_of_scores : scores -> string
 
