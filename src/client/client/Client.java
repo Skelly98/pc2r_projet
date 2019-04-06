@@ -2,25 +2,42 @@ package client;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.net.SocketException;
+import java.io.PrintStream;
+import java.net.Socket;
 
-public class FromServer extends Thread {
-	DataInputStream inchan;
-	GameWindow gw;
-	Client c;
-		
-	public FromServer(DataInputStream inchan, GameWindow gw, Client c) {
-		this.inchan = inchan;
-		this.gw = gw;
-		this.c = c;
-	}
-
-	@Override 
-	public void run() {
+public class Client {
+	
+	protected static final int PORT=45678;
+	
+	private final double turnit = 1.0;
+	private final  double thrustit = 1.0;
+	private double refresh_tickrate;
+	
+	
+	
+	public static void main(String[] args) {
+		Socket s = null;
+		if(args.length != 1) {
+			System.err.println("Usage : java Client <hote>");
+			System.exit(1);
+		}
 		try {
+			s = new Socket(args[0],PORT);
+			DataInputStream canalLecture = new DataInputStream(s.getInputStream());
+			DataInputStream console = new DataInputStream(s.getInputStream());
+			PrintStream canalEcriture = new PrintStream(s.getOutputStream());
+			System.out.println("Connexion etablie : "+ s.getInetAddress()+" port : "+ s.getPort());
+			
+			String ligne = new String();
+			char c;
+			
 			while(true) {
-				String command = inchan.readLine();
-				String [] arr = command.split("/");
+				while((c=(char) System.in.read())!= '\n') {
+					ligne = ligne+c;
+				}
+				
+				ligne = canalLecture.readLine();
+				String [] arr = ligne.split("/");
 				int length = arr.length;
 				switch(arr[0]) {
 					case "WELCOME": 
@@ -74,11 +91,11 @@ public class FromServer extends Thread {
 						break;
 					default : System.out.println("Commande  inexistante.");
 				}
-					
 			}
 		}
 		catch(IOException e) {
-			e.printStackTrace();
+			System.err.println(e);
 		}
 	}
+
 }
