@@ -5,14 +5,16 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.Socket;
 
-public class Client {
+import view.GameWindow;
+
+public class Client extends Thread{
 	
 	protected static final int PORT=45678;
 	
+	protected GameWindow gw;
 	private final double turnit = 1.0;
 	private final  double thrustit = 1.0;
 	private double refresh_tickrate;
-	
 	
 	
 	public static void main(String[] args) {
