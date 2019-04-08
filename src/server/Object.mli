@@ -26,4 +26,6 @@ val accelerate : t -> int -> unit
 
 val touching : t -> t -> bool
 
+val collision_comp : t -> t -> unit
+
 val collision : t -> t -> unit

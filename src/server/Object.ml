@@ -54,7 +54,19 @@ let accelerate obj thrust =
 
 (** only used inside collision so no mutex *)
 let touching obj1 obj2 =
-  obj1.id <> obj2.id && ((obj1.coord_x -. obj2.coord_x) ** 2. +. (obj1.coord_x -. obj2.coord_x) ** 2. <= (obj1.radius +. obj2.radius) ** 2.)
+  obj1.id <> obj2.id && ((obj1.coord_x -. obj2.coord_x) ** 2. +. (obj1.coord_y -. obj2.coord_y) ** 2. <= (obj1.radius +. obj2.radius) ** 2.)
+
+(** no interblocage as this is the only function using 2 mutex *)
+let collision_comp obj1 obj2 =
+  Mutex.lock obj1.mtx;
+  Mutex.lock obj2.mtx;
+  (if touching obj1 obj2
+    then begin
+      obj1.speed_x <- -. obj1.speed_x;
+      obj1.speed_y <- -. obj1.speed_y
+    end);
+  Mutex.unlock obj2.mtx;
+  Mutex.unlock obj1.mtx
 
 (** no interblocage as this is the only function using 2 mutex *)
 let collision obj1 obj2 =
