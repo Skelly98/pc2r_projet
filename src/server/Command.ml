@@ -70,13 +70,13 @@ let string_of_vcoords vcoords =
   let rec loop vcoords acc =
     match vcoords with
     |[] -> acc
-    |(user,(x,y),(vx,vy),angle)::[] -> Printf.sprintf "%s%s:X%fY%f|VX%fVY%f|T%f" acc user x y vx vy angle
-    |(user,(x,y),(vx,vy),angle)::tl -> loop tl (Printf.sprintf "%s%s:X%fY%f|VX%fVY%f|T%f|" acc user x y vx vy angle)
+    |(user,(x,y),(vx,vy),angle)::[] -> Printf.sprintf "%s%s:X%fY%fVX%fVY%fT%f" acc user x y vx vy angle
+    |(user,(x,y),(vx,vy),angle)::tl -> loop tl (Printf.sprintf "%s%s:X%fY%fVX%fVY%fT%f|" acc user x y vx vy angle)
   in loop vcoords ""
 
 let to_string cmd =
   match cmd with
-  |WELCOME_COMP(user, scores, (x,y), coords) -> Printf.sprintf "WELCOME/%s/%sX%fY%f/%s/" !Values.phase (string_of_scores scores) x y (string_of_coords_no_name coords)
+  |WELCOME_COMP(user, scores, (x,y), ocoords) -> Printf.sprintf "WELCOME/%s/%sX%fY%f/%s/" !Values.phase (string_of_scores scores) x y (string_of_coords_no_name ocoords)
   |WELCOME(user, scores, (x,y), coords) -> Printf.sprintf "WELCOME/%s/%sX%fY%f/%s/" !Values.phase (string_of_scores scores) x y (string_of_coords coords)
   |DENIED -> "DENIED/"
   |NEWPLAYER user -> "NEWPLAYER/" ^ user ^ "/"
