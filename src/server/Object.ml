@@ -62,7 +62,30 @@ let collision obj1 obj2 =
   Mutex.lock obj2.mtx;
   (if touching obj1 obj2
     then begin
-    (** TODO *)
+      (** src : http://owl-ge.ch/IMG/pdf/choc_2D_avec_citation.pdf (page 12) *)
+      (** definitions of constants *)
+      let direction_1 = acos (obj1.speed_x +. obj1.speed_y)
+      and direction_2 = acos (obj2.speed_x +. obj2.speed_y)
+      and speed_1 = sqrt (obj1.speed_x**2. +. obj1.speed_y**2.)
+      and speed_2 = sqrt (obj2.speed_x**2. +. obj2.speed_y**2.)
+      and m1_m2_div_m1_m2 = (obj1.mass -. obj2.mass) /. (obj1.mass +. obj2.mass)
+      and m2_m1_div_m2_m1 = (obj2.mass -. obj1.mass) /. (obj2.mass +. obj1.mass)
+      and _2_m2_div_m1_m2 = (2. *. obj2.mass ) /. (obj1.mass +. obj2.mass)
+      and _2_m1_div_m1_m2 = (2. *. obj1.mass ) /. (obj1.mass +. obj2.mass) in
+
+      (** calcul *)
+      let new_direction_1 = atan (m1_m2_div_m1_m2 *. (tan direction_1)
+        +. (_2_m2_div_m1_m2 *. speed_2 *. (sin direction_2)) /. (speed_1 *. (cos direction_1)))
+      and new_direction_2 = atan (m2_m1_div_m2_m1 *. (tan direction_2)
+        +. (_2_m1_div_m1_m2 *. speed_1 *. (sin direction_1)) /. (speed_2 *. (cos direction_2))) in
+      let new_speed_1 = sqrt ((m1_m2_div_m1_m2 *. speed_1 *. (sin direction_1) +. _2_m2_div_m1_m2 *. speed_2 *. (sin direction_2))**2. +. (speed_1 *. (cos direction_1))**2.)
+      and new_speed_2 = sqrt ((m2_m1_div_m2_m1 *. speed_2 *. (sin direction_2) +. _2_m1_div_m1_m2 *. speed_1 *. (sin direction_1))**2. +. (speed_2 *. (cos direction_2))**2.) in
+
+      (** new speeds *)
+      obj1.speed_x <- new_speed_1 *. (cos new_direction_1);
+      obj1.speed_y <- new_speed_1 *. (sin new_direction_1);
+      obj2.speed_x <- new_speed_2 *. (cos new_direction_2);
+      obj2.speed_y <- new_speed_2 *. (sin new_direction_2)   
     end);
   Mutex.unlock obj2.mtx;
   Mutex.unlock obj1.mtx
