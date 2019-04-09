@@ -20,11 +20,11 @@ public class Objectif {
 		return y;
 	}
 
-	public double setX(double x) {
+	public void setX(double x) {
 		this.x = x;
 	}
 
-	public double setY(double y) {
+	public void setY(double y) {
 		this.y = y;
 	}
 
