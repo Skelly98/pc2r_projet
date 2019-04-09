@@ -13,16 +13,15 @@ public class Client {
 	private double refresh_tickrate;
 
 	public static void main(String[] args) {
-		int PORT=45678;
 		GameWindow gw;
 		Arena arena = new Arena();
-		if(args.length != 1) {
-			System.err.println("Usage : java Client <hote>");
+		if(args.length != 2) {
+			System.err.println("Usage : java Client <hote> <port> ");
 			System.exit(1);
 		}
 		Socket s = null;
 		try {
-			s = new Socket(args[0],PORT);
+			s = new Socket(args[0],Integer.parseInt(args[1]));
 		} catch (IOException e) {
 			System.err.println("IUnknown server");
 			System.exit(1);

@@ -1,14 +1,12 @@
 package client;
 
 import java.io.DataInputStream;
-import java.io.IOException;
 import java.io.PrintStream;
+import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
 import java.lang.Runnable;
 import model.Arena;
-
-import view.GameWindow;
 
 public class CommandReceiver implements Runnable {
 

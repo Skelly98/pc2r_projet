@@ -8,6 +8,10 @@ SRC_SERVER=src/server/
 SRC_CLIENT=src/client/
 OBJDIR=bin/
 
+DIR_CLIENT=client/
+DIR_MODEL=model/
+DIR_VIEW=view/
+
 TARGET_SERVER=Server
 TARGET_CLIENT=Client
 
@@ -34,9 +38,12 @@ $(TARGET_SERVER): $(OBJSO)
 # Java
 
 $(TARGET_CLIENT):
-	$(JAVA) $(JAVAFLAGS) -d $(OBJDIR) $(SRC_CLIENT)client/*.java $(SRC_CLIENT)model/*.java $(SRC_CLIENT)view/*.java
+	$(JAVA) $(JAVAFLAGS) -d $(OBJDIR) $(SRC_CLIENT)$(DIR_CLIENT)*.java $(SRC_CLIENT)$(DIR_MODEL)*.java $(SRC_CLIENT)$(DIR_VIEW)*.java
 
 clean:
 	rm -f $(OBJSI)
 	rm -f $(OBJSO)
 	rm -f $(TARGET_SERVER)
+	rm -rf $(OBJDIR)$(DIR_CLIENT)
+	rm -rf $(OBJDIR)$(DIR_MODEL)
+	rm -rf $(OBJDIR)$(DIR_VIEW)
