@@ -1,32 +1,70 @@
 package model;
 
-import java.util.List;
+import java.util.HashMap;
 
 public class Arena {
-	
-	private int center_X;
-	private int center_Y;
-	private int half_width;
-	private int half_length;
-	private List <Vehicule> list_vehicule;
-	
-	
-	public Arena(int center_X, int center_Y, int half_width, int half_length, List<Vehicule> list_vehicule) {
-		this.center_X = center_X;
-		this.center_Y = center_Y;
-		this.half_width = half_width;
-		this.half_length = half_length;
-		this.list_vehicule = list_vehicule;
+
+	public static final double half_width = 5.;
+	public static final double half_length = 5.;
+	private HashMap<String, Vehicule> vehicules;
+	private HashMap<Integer, Obstacle> obstacles;
+	private Objectif obj;
+
+
+	public Arena() {
+		this.vehicules = new HashMap<String, Vehicule>();
+		this.obstacles = new HashMap<Integer, Obstacle>();
+		// outside
+		obj = new Objectif(2 * half_width, 2* half_length, 0.1);
 	}
-	
-	public void move_all() {
-		for(Vehicule v : list_vehicule) {
+
+	public void setVehiculeCoord(String owner, double x, double y) {
+		if (vehicules.containsKey(owner)) {
+			vehicules.get(owner).setCoord(x, y);
+		}
+		else {
+			vehicules.put(owner, new Vehicule(x, y));
+		}
+	}
+
+	public void setVehiculeVcoord(String owner, double x, double y, double vx, double vy, double angle) {
+		vehicules.get(owner).setVcoord(x, y, vx, vy, angle);
+	}
+
+	public void setObstacleCoord(int id, double x, double y) {
+		if (obstacles.containsKey(id)) {
+			obstacles.get(id).setCoord(x, y);
+		}
+		else {
+			obstacles.put(id, new Obstacle(x, y));
+		}
+	}
+
+	public void setObstacleVcoord(int id, double x, double y, double vx, double vy, double angle) {
+		obstacles.get(id).setVcoord(x, y, vx, vy, angle);
+	}
+
+	public void move_vehicules() {
+		for(Vehicule v : vehicules.values()) {
 			v.move();
 		}
 	}
 
-	public void remove_vehicule(int id) {
-		list_vehicule.get(id).delete();
+	public void move_all() {
+		for(Vehicule v : vehicules.values()) {
+			v.move();
+		}
+		for(Obstacle o : obstacles.values()) {
+			o.move();
+		}
 	}
-	
+
+	public void remove_vehicule(String owner) {
+		vehicules.remove(owner);
+	}
+
+	public void setObjectif(double x, double y) {
+			obj.setX(x);
+			obj.setY(y);
+	}
 }

@@ -1,8 +1,8 @@
 OCAML=ocamlc
 MLFLAGS=-thread unix.cma threads.cma
 
-C=gcc
-CFLAGS= -g -lm
+JAVA=javac
+JAVAFLAGS=-Xlint
 
 SRC_SERVER=src/server/
 SRC_CLIENT=src/client/
@@ -18,12 +18,7 @@ INTERFACES=Values.mli Object.mli Command.mli Arena.mli Player.mli Server.mli
 OBJSI=$(patsubst %.mli,$(OBJDIR)%.cmi,$(INTERFACES))
 OBJSO=$(patsubst %.mli,$(OBJDIR)%.cmo,$(INTERFACES))
 
-# C
-
-HEADERS=$(wildcard $(SRC_CLIENT)*.h)
-OBJSC=$(patsubst $(SRC_CLIENT)%.h,$(OBJDIR)%.o,$(HEADERS))
-
-all: $(OBJSI) $(OBJSO) $(TARGET_SERVER) $(OBJSC) $(TARGET_CLIENT)
+all: $(OBJSI) $(OBJSO) $(TARGET_SERVER) $(TARGET_CLIENT)
 
 # OCaml
 
@@ -36,17 +31,12 @@ $(OBJDIR)%.cmo: $(SRC_SERVER)%.ml $(OBJDIR)%.cmi
 $(TARGET_SERVER): $(OBJSO)
 	$(OCAML) $(MLFLAGS) -I $(OBJDIR) -I $(SRC_SERVER) $^ -o $@
 
-# C
+# Java
 
-$(OBJDIR)%.o: $(SRC_CLIENT)%.c $(SRC_CLIENT)%.h
-	$(C) -I $(OBJDIR) -o $@ -c $< $(CFLAGS)
-
-$(TARGET_CLIENT): $(OBJSC) $(SRC_CLIENT)$(TARGET_CLIENT).c
-	$(C) -I $(OBJDIR) -o $@ $^ $(CFLAGS)
+$(TARGET_CLIENT):
+	$(JAVA) $(JAVAFLAGS) -d $(OBJDIR) $(SRC_CLIENT)client/*.java $(SRC_CLIENT)model/*.java $(SRC_CLIENT)view/*.java
 
 clean:
 	rm -f $(OBJSI)
 	rm -f $(OBJSO)
-	rm -f $(OBJSC)
 	rm -f $(TARGET_SERVER)
-	rm -f $(TARGET_CLIENT)

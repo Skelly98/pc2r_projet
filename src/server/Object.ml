@@ -52,7 +52,9 @@ let accelerate obj thrust =
   obj.speed_y <- obj.speed_y +. (float_of_int thrust) *. (sin obj.angle);
   Mutex.unlock obj.mtx
 
-(** only used inside collision so no mutex *)
+(** used inside collision so no mutex (deadlock) *)
+(** also used for checking the objectives, but the only thread using that function
+is also the only thread moving the objects, so we don't need any mutex *)
 let touching obj1 obj2 =
   obj1.id <> obj2.id && ((obj1.coord_x -. obj2.coord_x) ** 2. +. (obj1.coord_y -. obj2.coord_y) ** 2. <= (obj1.radius +. obj2.radius) ** 2.)
 
@@ -97,7 +99,7 @@ let collision obj1 obj2 =
       obj1.speed_x <- new_speed_1 *. (cos new_direction_1);
       obj1.speed_y <- new_speed_1 *. (sin new_direction_1);
       obj2.speed_x <- new_speed_2 *. (cos new_direction_2);
-      obj2.speed_y <- new_speed_2 *. (sin new_direction_2)   
+      obj2.speed_y <- new_speed_2 *. (sin new_direction_2)
     end);
   Mutex.unlock obj2.mtx;
   Mutex.unlock obj1.mtx
