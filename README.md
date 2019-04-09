@@ -6,5 +6,6 @@ TODO :
     Object.collison  
 
   Client :  
-    Communicaion with Server
-    User Interface with swing
+  
+    - Communication with Server  
+    - User Interface with swing
