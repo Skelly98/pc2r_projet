@@ -15,6 +15,8 @@ let move_all () = Array.iter Object.move objects
 
 let move_all_ids ids = List.iter (fun id -> Object.move objects.(id)) ids
 
+let collision_all_ids ids = List.iter (fun id -> Array.iter (fun obj -> Object.collision objects.(id) obj) objects) ids
+
 (** create a new object with given id *)
 let add_object id mass radius = objects.(id) <- Object.create id mass radius
 

@@ -16,12 +16,14 @@ public class CommandReceiver implements Runnable {
 	private boolean game_phase = false;
 	private boolean compatibility_mode = false;
 	private Arena arena;
+	private ObjectMover mover;
 	private HashMap<String, Integer> players_scores;
 
-	public CommandReceiver(Socket s, Arena arena) {
+	public CommandReceiver(Socket s, Arena arena, ObjectMover mover, HashMap<String, Integer> players_scores) {
 		this.s = s;
 		this.arena = arena;
-		players_scores = new HashMap<String, Integer>();
+		this.mover = mover;
+		this.players_scores = players_scores; new HashMap<String, Integer>();
 	}
 
 	public void run() {
@@ -155,6 +157,7 @@ public class CommandReceiver implements Runnable {
 			String [] id_and_coord = obstacles[i].split(":");
 			if (id_and_coord.length == 0) {
 				boolean compatibility_mode = true;
+                mover.compatibilityMode();
 				String [] x_and_y = obstacles[i].split("[XY]+");
 				arena.setObstacleCoord(i, Double.parseDouble(x_and_y[0]), Double.parseDouble(x_and_y[1]));
 			}

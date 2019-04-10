@@ -44,22 +44,47 @@ public class Arena {
 		obstacles.get(id).setVcoord(x, y, vx, vy, angle);
 	}
 
-	public void move_vehicules() {
-		for(Vehicule v : vehicules.values()) {
+	public void moveVehicules() {
+		for (Vehicule v : vehicules.values()) {
 			v.move();
 		}
 	}
 
-	public void move_all() {
-		for(Vehicule v : vehicules.values()) {
+	public void moveAll() {
+		for (Vehicule v : vehicules.values()) {
 			v.move();
 		}
-		for(Obstacle o : obstacles.values()) {
+		for (Obstacle o : obstacles.values()) {
 			o.move();
 		}
 	}
 
-	public void remove_vehicule(String owner) {
+	public void collisionAll() {
+		for (Obstacle o : obstacles.values()) {
+			for (Vehicule v : vehicules.values()) {
+				if (o.touching(v)) {
+					o.collision(v);
+				}
+			}
+			for (Obstacle obs : obstacles.values()) {
+				if (o.touching(obs)) {
+					o.collision(obs);
+				}
+			}
+		}
+	}
+
+	public void collisionVehicules() {
+		for (Vehicule v : vehicules.values()) {
+			for (Obstacle o : obstacles.values()) {
+				if (v.touching(o)) {
+					v.collision(o);
+				}
+			}
+		}
+	}
+
+	public void removeVehicule(String owner) {
 		vehicules.remove(owner);
 	}
 

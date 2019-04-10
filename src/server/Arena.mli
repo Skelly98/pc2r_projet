@@ -11,6 +11,8 @@ val move_all : unit -> unit
 
 val move_all_ids : int list -> unit
 
+val collision_all_ids : int list -> unit 
+
 (** create a new object with given id *)
 val add_object : int -> float -> float -> unit
 

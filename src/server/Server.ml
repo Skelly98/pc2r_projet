@@ -113,8 +113,8 @@ let game () =
       if !at_least_one then objective := (Object.create 0 0. Values.objective_radius);
       (** check collisions *)
       (if !Values.compatibility_mode
-        then Array.iter (fun ((_,_),p) -> List.iter (Object.collision Arena.objects.(p.ship_id)) (List.map (fun id -> Arena.objects.(id)) (Array.to_list asteroids_ids))) players
-        else Array.iter (fun obj -> Array.iter (Object.collision obj) Arena.objects) Arena.objects);
+        then Array.iter (fun ((_,_),p) -> List.iter (Object.collision_comp Arena.objects.(p.ship_id)) (List.map (fun id -> Arena.objects.(id)) (Array.to_list asteroids_ids))) players
+        else Arena.collision_all_ids (Array.to_list asteroids_ids));
       (** move objects *)
       (if !Values.compatibility_mode
         then Arena.move_all_ids (List.map (fun ((_,_),p) -> p.ship_id) (real_players ()))
