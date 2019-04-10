@@ -62,6 +62,10 @@ public abstract class Object {
 		double _2_m2_div_m1_m2 = (2. * o.mass ) / (this.mass + o.mass);
 		double _2_m1_div_m1_m2 = (2. * this.mass ) / (this.mass + o.mass);
 
+		//empeche div par 0
+		v1 = (v1 == 0. ? 0.000001 : v1);
+		v2 = (v2 == 0. ? 0.000001 : v2);
+
 		//calcul
 		double new_direction_1 = Math.atan (m1_m2_div_m1_m2 * (Math.tan(direction1))
 		+ (_2_m2_div_m1_m2 * v2 * (Math.sin(direction2)) / (v1 * (Math.cos(direction1)))));

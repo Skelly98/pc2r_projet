@@ -1,6 +1,8 @@
 package model;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 public class Arena {
 
@@ -60,6 +62,7 @@ public class Arena {
 	}
 
 	public void collisionAll() {
+		List<Obstacle> done = new ArrayList<Obstacle>();
 		for (Obstacle o : obstacles.values()) {
 			for (Vehicule v : vehicules.values()) {
 				if (o.touching(v)) {
@@ -67,10 +70,11 @@ public class Arena {
 				}
 			}
 			for (Obstacle obs : obstacles.values()) {
-				if (!o.equals(obs) && o.touching(obs)) {
+				if (!o.equals(obs) && ! done.contains(obs) && o.touching(obs)) {
 					o.collision(obs);
 				}
 			}
+			done.add(o);
 		}
 	}
 
