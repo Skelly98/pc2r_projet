@@ -134,8 +134,7 @@ let game () =
       (** send message TICK to everyone *)
       (if !Values.compatibility_mode
         then message (Command.FromServer.TICK_COMP(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ())))
-        else message (Command.FromServer.TICK(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ()), asteroids_vcoords ())));
-      print_endline (Command.FromServer.to_string (Command.FromServer.TICK(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ()), asteroids_vcoords ())))
+        else message (Command.FromServer.TICK(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ()), asteroids_vcoords ())))
     done;
     starting := false;
     ended := false;
@@ -143,6 +142,7 @@ let game () =
   done
 
 let _ =
+  Random.self_init ();
   match Array.length Sys.argv with
   |2 ->
   begin

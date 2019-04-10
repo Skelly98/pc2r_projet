@@ -39,8 +39,9 @@ public class CommandReceiver implements Runnable {
 				ligne = canalLecture.readLine();
 				String [] arr = ligne.split("/");
 				int length = arr.length;
+				/*
 				for (int i = 0; i < length; i++)
-					System.err.println(arr[i]);
+					System.err.println(arr[i]); */
 				switch(arr[0]) {
 					case "WELCOME":
 						if(length < 5) System.out.println("Format incorrect ! --> WELCOME/phase/scores/coord/coords");

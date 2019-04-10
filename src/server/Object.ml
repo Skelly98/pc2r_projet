@@ -4,10 +4,6 @@ type t = {mutable id : int; (** mutable for easy delete *)
           mutable speed_x : float; mutable speed_y : float;
           mutable angle : float; mass : float; radius : float}
 
-let thrust_power = Values.thrust_power
-
-let turn_speed = Values.turn_speed
-
 (** default object with id = -1 *)
 let default = {id = -1 ; mtx = Mutex.create () ; coord_x = 0. ; coord_y = 0. ; speed_x = 0.; speed_y = 0.; angle = 0.; mass = 0.; radius = 0.}
 
@@ -83,12 +79,16 @@ let collision obj1 obj2 =
       (** definitions of constants *)
       let direction_1 = acos (obj1.speed_x +. obj1.speed_y)
       and direction_2 = acos (obj2.speed_x +. obj2.speed_y)
-      and speed_1 = sqrt (obj1.speed_x**2. +. obj1.speed_y**2.)
-      and speed_2 = sqrt (obj2.speed_x**2. +. obj2.speed_y**2.)
+      and temp_speed_1 = sqrt (obj1.speed_x**2. +. obj1.speed_y**2.)
+      and temp_speed_2 = sqrt (obj2.speed_x**2. +. obj2.speed_y**2.)
       and m1_m2_div_m1_m2 = (obj1.mass -. obj2.mass) /. (obj1.mass +. obj2.mass)
       and m2_m1_div_m2_m1 = (obj2.mass -. obj1.mass) /. (obj2.mass +. obj1.mass)
       and _2_m2_div_m1_m2 = (2. *. obj2.mass ) /. (obj1.mass +. obj2.mass)
       and _2_m1_div_m1_m2 = (2. *. obj1.mass ) /. (obj1.mass +. obj2.mass) in
+
+      (** avoid div by 0 *)
+      let speed_1 = (if temp_speed_1 <> 0. then temp_speed_1 else Values.god_intervention)
+      and speed_2 = (if temp_speed_2 <> 0. then temp_speed_2 else Values.god_intervention) in
 
       (** calcul *)
       let new_direction_1 = atan (m1_m2_div_m1_m2 *. (tan direction_1)

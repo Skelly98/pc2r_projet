@@ -4,10 +4,6 @@ type t = {mutable id : int; (** mutable for easy delete *)
           mutable speed_x : float; mutable speed_y : float;
           mutable angle : float; mass : float; radius : float}
 
-val thrust_power : float
-
-val turn_speed : int
-
 (** default object with id = -1 *)
 val default : t
 

@@ -15,10 +15,6 @@ val half_width : float
 
 val half_height : float
 
-val thrust_power : float
-
-val turn_speed : int
-
 val ship_mass : float
 
 val ship_radius : float
@@ -28,6 +24,8 @@ val objective_radius : float
 val asteroid_mass : float
 
 val asteroid_radius : float
+
+val god_intervention : float
 
 val phase : string ref
 

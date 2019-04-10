@@ -20,9 +20,11 @@ let of_string cmd =
                           then  match String.split_on_char 'T' cmd with
                                 |[a_to_float; to_int] -> NEWCOM( (float_of_string (String.sub a_to_float 1 (String.length a_to_float))),
                                                                  (int_of_string to_int))
+                                |_ -> UNRECOGNIZED
                           else match String.split_on_char 'A' cmd with
                                 |[to_float; t_to_int] -> NEWCOM( (float_of_string to_float),
-                                                                 (int_of_string (String.sub t_to_int 1 (String.length t_to_int)))))
+                                                                 (int_of_string (String.sub t_to_int 1 (String.length t_to_int))))
+                                |_ -> UNRECOGNIZED)
   |_ -> UNRECOGNIZED
 
 end
