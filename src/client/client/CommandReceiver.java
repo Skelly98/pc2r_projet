@@ -1,8 +1,8 @@
 package client;
 
-import java.io.DataInputStream;
-import java.io.PrintStream;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.HashMap;
 import java.lang.Runnable;
@@ -28,8 +28,8 @@ public class CommandReceiver implements Runnable {
 
 	public void run() {
 		try {
-			DataInputStream canalLecture = new DataInputStream(s.getInputStream());
-			DataInputStream console = new DataInputStream(s.getInputStream());
+			BufferedReader canalLecture = new BufferedReader(new InputStreamReader(s.getInputStream()));
+			BufferedReader console = new BufferedReader(new InputStreamReader(s.getInputStream()));
 			System.out.println("Connexion etablie : "+ s.getInetAddress()+" port : "+ s.getPort());
 
 			String ligne = new String();
