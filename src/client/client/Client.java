@@ -23,11 +23,11 @@ public class Client {
 		try {
 			s = new Socket(args[0],Integer.parseInt(args[1]));
 		} catch (IOException e) {
-			System.err.println("IUnknown server");
+			System.err.println("Unknown server");
 			System.exit(1);
 		}
 		ObjectMover mover = new ObjectMover(arena, refresh_tickrate);
-		Thread window = new Thread(new GameWindow(s, arena, players_scores, args[3]));
+		Thread window = new Thread(new GameWindow(s, arena, players_scores, args[2]));
 		Thread objMover = new Thread(mover);
 		Thread cmdReceiver = new Thread(new CommandReceiver(s, arena, mover, players_scores));
 		cmdReceiver.start();

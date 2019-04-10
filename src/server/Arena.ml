@@ -3,11 +3,14 @@ let objects = Array.make Values.max_objects Object.default
 
 let new_object_id = ref 0
 
+let mtx = Mutex.create ()
+
 let refresh_id () =
+  Mutex.lock mtx;
   let rec loop ind =
     match (objects.(ind)) with
-    |obj when obj.id = -1 -> new_object_id := ind; true
-    |_ -> if ind < Values.max_objects then loop (ind + 1) else false
+    |obj when obj.id = -1 -> (new_object_id := ind; Mutex.unlock mtx; true)
+    |_ -> if ind < Values.max_objects then loop (ind + 1) else (Mutex.unlock mtx; false)
   in loop 0
 
 (** Array.iter of move *)

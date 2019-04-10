@@ -1,6 +1,6 @@
 type t = {name: string; ship_id: int; mutable score: int}
 
-val create : string -> int -> t
+val create : string -> t
 
 val default : t
 

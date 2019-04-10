@@ -12,8 +12,8 @@ DIR_CLIENT=client/
 DIR_MODEL=model/
 DIR_VIEW=view/
 
-TARGET_SERVER=Server
-TARGET_CLIENT=Client
+TARGET_SERVER=$(OBJDIR)Server
+TARGET_CLIENT=$(OBJDIR)client/Client.class
 
 # OCaml
 

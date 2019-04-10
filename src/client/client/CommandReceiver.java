@@ -36,13 +36,11 @@ public class CommandReceiver implements Runnable {
 			char c;
 
 			while(true) {
-				while((c=(char) System.in.read())!= '\n') {
-					ligne = ligne+c;
-				}
-
 				ligne = canalLecture.readLine();
 				String [] arr = ligne.split("/");
 				int length = arr.length;
+				for (int i = 0; i < length; i++)
+					System.err.println(arr[i]);
 				switch(arr[0]) {
 					case "WELCOME":
 						if(length < 5) System.out.println("Format incorrect ! --> WELCOME/phase/scores/coord/coords");
@@ -51,8 +49,8 @@ public class CommandReceiver implements Runnable {
 								game_phase = true;
 							}
 							setPlayers(arr[2]);
-							String [] x_and_y = arr[3].split("[XY]+");
-							arena.setObjectif(Double.parseDouble(x_and_y[0]), Double.parseDouble(x_and_y[1]));
+							String [] x_and_y = arr[3].split("[XY]");
+							arena.setObjectif(Double.parseDouble(x_and_y[1]), Double.parseDouble(x_and_y[2]));
 							setObstaclesCoords(arr[4]);
 							System.out.println("Bienvenue !\nPhase de la session : "+ arr[1]+ "\n Score: " + arr[2] + "\n Coordonnées de l'objectif : "+arr[3]);
 						}
@@ -80,11 +78,11 @@ public class CommandReceiver implements Runnable {
 						}
 						break;
 					case "SESSION" :
-						if(length < 5) System.out.println("Format incorrect ! --> SESSION/coords/coord/ocoords");
+						if(length < 4) System.out.println("Format incorrect ! --> SESSION/coords/coord/ocoords");
 						else {
 							setPlayersCoords(arr[1]);
-							String [] x_and_y = arr[2].split("[XY]+");
-							arena.setObjectif(Double.parseDouble(x_and_y[0]), Double.parseDouble(x_and_y[1]));
+							String [] x_and_y = arr[2].split("[XY]");
+							arena.setObjectif(Double.parseDouble(x_and_y[1]), Double.parseDouble(x_and_y[2]));
 							setObstaclesCoords(arr[3]);
 							game_phase = true;
 							System.out.println("Session commencée.\nCoordonnées des véhicules : "+arr[1]+"\nCoordonnées de l'objectif : "+arr[2] );
@@ -111,8 +109,8 @@ public class CommandReceiver implements Runnable {
 						if(length < 3) System.out.println("Format incorrect ! --> NEWOBJ/coord/score");
 						else {
 							setPlayers(arr[2]);
-							String [] x_and_y = arr[1].split("[XY]+");
-							arena.setObjectif(Double.parseDouble(x_and_y[0]), Double.parseDouble(x_and_y[1]));
+							String [] x_and_y = arr[1].split("[XY]");
+							arena.setObjectif(Double.parseDouble(x_and_y[1]), Double.parseDouble(x_and_y[2]));
 							System.out.println("Nouvel objectif : "+arr[1]+"\n Scores : "+arr[2]);
 						}
 						break;
@@ -126,52 +124,52 @@ public class CommandReceiver implements Runnable {
 	}
 
 	public void setPlayers(String str) {
-		String [] players = str.split("|");
+		String [] players = str.split("[|]");
 		for (int i = 0; i < players.length; i++) {
-			String [] name_and_coord = players[i].split(":");
-			players_scores.put(name_and_coord[0], Integer.parseInt(name_and_coord[1]));
+			String [] name_and_score = players[i].split("[:]");
+			players_scores.put(name_and_score[0], Integer.parseInt(name_and_score[1]));
 		}
 	}
 
 	public void setPlayersCoords(String str) {
-		String [] players = str.split("|");
+		String [] players = str.split("[|]");
 		for (int i = 0; i < players.length; i++) {
-			String [] name_and_coord = players[i].split(":");
-			String [] x_and_y = name_and_coord[1].split("[XY]+");
-			arena.setVehiculeCoord(name_and_coord[0], Double.parseDouble(x_and_y[0]), Double.parseDouble(x_and_y[1]));
+			String [] name_and_coord = players[i].split("[:]");
+			String [] x_and_y = name_and_coord[1].split("[XY]");
+			arena.setVehiculeCoord(name_and_coord[0], Double.parseDouble(x_and_y[1]), Double.parseDouble(x_and_y[2]));
 		}
 	}
 
 	public void setPlayersVcoords(String str) {
-		String [] players = str.split("|");
+		String [] players = str.split("[|]");
 		for (int i = 0; i < players.length; i++) {
-			String [] name_and_vcoord = players[i].split(":");
-			String [] vcoord = name_and_vcoord[1].split("[XYVA]+");
-			arena.setVehiculeVcoord(name_and_vcoord[0], Double.parseDouble(vcoord[0]), Double.parseDouble(vcoord[1]), Double.parseDouble(vcoord[2]), Double.parseDouble(vcoord[3]), Double.parseDouble(vcoord[4]));
+			String [] name_and_vcoord = players[i].split("[:]");
+			String [] vcoord = name_and_vcoord[1].split("[XYVT]");
+			arena.setVehiculeVcoord(name_and_vcoord[0], Double.parseDouble(vcoord[1]), Double.parseDouble(vcoord[2]), Double.parseDouble(vcoord[4]), Double.parseDouble(vcoord[6]), Double.parseDouble(vcoord[7]));
 		}
 	}
 
 	public void setObstaclesCoords(String str) {
-		String [] obstacles = str.split("|");
+		String [] obstacles = str.split("[|]");
 		for (int i = 0; i < obstacles.length; i++) {
-			String [] id_and_coord = obstacles[i].split(":");
+			String [] id_and_coord = obstacles[i].split("[:]");
 			if (id_and_coord.length == 0) {
 				boolean compatibility_mode = true;
                 mover.compatibilityMode();
-				String [] x_and_y = obstacles[i].split("[XY]+");
-				arena.setObstacleCoord(i, Double.parseDouble(x_and_y[0]), Double.parseDouble(x_and_y[1]));
+				String [] x_and_y = obstacles[i].split("[XY]");
+				arena.setObstacleCoord(i, Double.parseDouble(x_and_y[1]), Double.parseDouble(x_and_y[2]));
 			}
-			String [] x_and_y = id_and_coord[1].split("[XY]+");
-			arena.setObstacleCoord(Integer.parseInt(id_and_coord[0]), Double.parseDouble(x_and_y[0]), Double.parseDouble(x_and_y[1]));
+			String [] x_and_y = id_and_coord[1].split("[XY]");
+			arena.setObstacleCoord(Integer.parseInt(id_and_coord[0]), Double.parseDouble(x_and_y[1]), Double.parseDouble(x_and_y[2]));
 		}
 	}
 
 	public void setObstacleVcoords(String str) {
-		String [] obstacles = str.split("|");
+		String [] obstacles = str.split("[|]");
 		for (int i = 0; i < obstacles.length; i++) {
-			String [] id_and_vcoord = obstacles[i].split(":");
-			String [] vcoord = id_and_vcoord[1].split("[XYVA]+");
-			arena.setObstacleVcoord(Integer.parseInt(id_and_vcoord[0]), Double.parseDouble(vcoord[0]), Double.parseDouble(vcoord[1]), Double.parseDouble(vcoord[2]), Double.parseDouble(vcoord[3]), Double.parseDouble(vcoord[4]));
+			String [] id_and_vcoord = obstacles[i].split("[:]");
+			String [] vcoord = id_and_vcoord[1].split("[XYVT]");
+			arena.setObstacleVcoord(Integer.parseInt(id_and_vcoord[0]), Double.parseDouble(vcoord[1]), Double.parseDouble(vcoord[2]), Double.parseDouble(vcoord[4]), Double.parseDouble(vcoord[6]), Double.parseDouble(vcoord[7]));
 		}
 	}
 }

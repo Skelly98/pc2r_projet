@@ -12,7 +12,12 @@ let max_players = Values.max_players
 
 let players = Array.make max_players ((stdin,stdout),Player.default) (** stdin and stdout for default chans *)
 
-let asteroids_ids = Array.make Values.nb_asteroids (Arena.add_object_no_id Values.asteroid_mass Values.asteroid_radius)
+let asteroids_ids = Array.make Values.nb_asteroids 0
+
+let make_asteroids () =
+  for i = 0 to Values.nb_asteroids - 1 do
+    asteroids_ids.(i) <- (Arena.add_object_no_id Values.asteroid_mass Values.asteroid_radius)
+  done
 
 let real_players () = List.filter (fun ((_,_),p) -> p.ship_id <> -1) (Array.to_list players)
 
@@ -28,7 +33,7 @@ let asteroids_vcoords () = List.map (fun x -> (string_of_int x),Object.coords Ar
 
 let message ?(id = (-1)) cmd =
   match id with
-  |(-1) -> Array.iter (fun x -> output_string (snd (fst x)) (Command.FromServer.to_string cmd)) players
+  |(-1) -> List.iter (fun x -> output_string (snd (fst x)) (Command.FromServer.to_string cmd)) (real_players ())
   |id -> output_string (snd (fst players.(id))) (Command.FromServer.to_string cmd)
 
 let create_server port max_con =
@@ -54,7 +59,7 @@ let server_process sock service =
         then begin
           ignore(Thread.create service ((Unix.in_channel_of_descr s,Unix.out_channel_of_descr s),!new_player_id));
           if (not !starting) then starting := true
-        end else message ~id:(!new_player_id) Command.FromServer.DENIED)
+        end else output_string (Unix.out_channel_of_descr s) (Command.FromServer.to_string (Command.FromServer.DENIED)))
   done
 
 let server_service (chans,id) =
@@ -66,7 +71,7 @@ let server_service (chans,id) =
         match Command.FromClient.of_string (input_line inchan) with
         |Command.FromClient.CONNECT(name) ->
           begin
-            players.(id) <- ((inchan,outchan), Player.create name id);
+            players.(id) <- ((inchan,outchan), Player.create name);
             (if !Values.compatibility_mode
             then begin
               message ~id:id (Command.FromServer.WELCOME_COMP(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords_comp ()));
@@ -89,17 +94,18 @@ let server_service (chans,id) =
 
 let game () =
   while true do
+    make_asteroids ();
     (if (List.length (real_players ())) > 0 then starting := true);
     while (not !starting) do
       Thread.delay 1.
     done;
+    Thread.delay 2.;
     Values.phase := "jeu";
-    Thread.delay 20.;
     message (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords !objective, asteroids_coords ()));
     while (not !ended) do
       let start = Sys.time () in
       (** check scores *)
-      for i = 0 to max_players do
+      for i = 0 to max_players - 1 do
         if (snd players.(i)).score >= Values.max_score
           then begin
             ended := true;
@@ -109,11 +115,11 @@ let game () =
       (** check objectif *)
       let at_least_one = ref false in
       (** we give points to all players touching the objective *)
-      Array.iter (fun ((_,_),p) -> if (Player.touching p !objective) then (at_least_one := true;  p.score <- p.score + 1)) players;
+      List.iter (fun ((_,_),p) -> if (Player.touching p !objective) then (at_least_one := true;  p.score <- p.score + 1)) (real_players ());
       if !at_least_one then objective := (Object.create 0 0. Values.objective_radius);
       (** check collisions *)
       (if !Values.compatibility_mode
-        then Array.iter (fun ((_,_),p) -> List.iter (Object.collision_comp Arena.objects.(p.ship_id)) (List.map (fun id -> Arena.objects.(id)) (Array.to_list asteroids_ids))) players
+        then List.iter (fun ((_,_),p) -> List.iter (Object.collision_comp Arena.objects.(p.ship_id)) (List.map (fun id -> Arena.objects.(id)) (Array.to_list asteroids_ids))) (real_players ())
         else Arena.collision_all_ids (Array.to_list asteroids_ids));
       (** move objects *)
       (if !Values.compatibility_mode
@@ -123,15 +129,17 @@ let game () =
       let wait_time = 1. /. Values.server_tickrate -. (Sys.time () -. start) in
       (** if wait_time < 0, Values.server_tickrate is too big *)
       (if (wait_time > 0.)
-        then Thread.delay (wait_time));
+        then Thread.delay (wait_time)
+        else print_endline "please decrease Values.server_tickrate");
       (** send message TICK to everyone *)
       (if !Values.compatibility_mode
         then message (Command.FromServer.TICK_COMP(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ())))
-        else message (Command.FromServer.TICK(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ()), asteroids_vcoords ())))
+        else message (Command.FromServer.TICK(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ()), asteroids_vcoords ())));
+      print_endline (Command.FromServer.to_string (Command.FromServer.TICK(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ()), asteroids_vcoords ())))
     done;
     starting := false;
     ended := false;
-    Values.phase := "attente";
+    Values.phase := "attente"
   done
 
 let _ =

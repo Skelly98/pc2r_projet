@@ -2,6 +2,8 @@ package model;
 
 public abstract class Object {
 
+	private static int cpt = 0;
+	public final int id;
 	protected double posX;
 	protected double posY;
 	protected double radius;
@@ -11,6 +13,7 @@ public abstract class Object {
 	protected double mass;
 
 	public Object(double posX, double posY) {
+		id = ++cpt;
 		this.posX = posX;
 		this.posY = posY;
 		this.angle = 0;
@@ -85,5 +88,12 @@ public abstract class Object {
 		this.vX = vX;
 		this.vY = vY;
 		this.angle = angle;
+	}
+
+	public synchronized boolean equals(java.lang.Object o) {
+		if (!(o instanceof Object)) {
+			return false;
+		}
+		return this.id == ((Object) o).id;
 	}
 }

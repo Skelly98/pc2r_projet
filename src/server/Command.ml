@@ -76,16 +76,16 @@ let string_of_vcoords vcoords =
 
 let to_string cmd =
   match cmd with
-  |WELCOME_COMP(user, scores, (x,y), ocoords) -> Printf.sprintf "WELCOME/%s/%sX%fY%f/%s/" !Values.phase (string_of_scores scores) x y (string_of_coords_no_name ocoords)
-  |WELCOME(user, scores, (x,y), coords) -> Printf.sprintf "WELCOME/%s/%sX%fY%f/%s/" !Values.phase (string_of_scores scores) x y (string_of_coords coords)
-  |DENIED -> "DENIED/"
-  |NEWPLAYER user -> "NEWPLAYER/" ^ user ^ "/"
-  |PLAYERLEFT user -> "PLAYERLEFT/" ^ user ^ "/"
-  |SESSION_COMP(coords_players, (x,y), coords_asteroids) -> Printf.sprintf "SESSION/%s/X%fY%f/%s/" (string_of_coords coords_players) x y (string_of_coords_no_name coords_asteroids)
-  |SESSION(coords_players, (x,y), coords_asteroids) -> Printf.sprintf "SESSION/%s/X%fY%f/%s/" (string_of_coords coords_players) x y (string_of_coords coords_asteroids)
-  |WINNER scores -> "WINNER/" ^ (string_of_scores scores)
-  |TICK_COMP vcoords -> "TICK/" ^ (string_of_vcoords vcoords)
-  |TICK(vcoords_players, vcoords_asteroids) -> "TICK/" ^ (string_of_vcoords vcoords_players) ^ (string_of_vcoords vcoords_asteroids)
-  |NEWOBJ((x,y), scores) ->  Printf.sprintf "NEWOBJ/X%fY%f/%s" x y (string_of_scores scores)
+  |WELCOME_COMP(user, scores, (x,y), ocoords) -> Printf.sprintf "WELCOME/%s/%s/X%fY%f/%s/\n" !Values.phase (string_of_scores scores) x y (string_of_coords_no_name ocoords)
+  |WELCOME(user, scores, (x,y), coords) -> Printf.sprintf "WELCOME/%s/%s/X%fY%f/%s/\n" !Values.phase (string_of_scores scores) x y (string_of_coords coords)
+  |DENIED -> "DENIED/\n"
+  |NEWPLAYER user -> "NEWPLAYER/" ^ user ^ "/\n"
+  |PLAYERLEFT user -> "PLAYERLEFT/" ^ user ^ "/\n"
+  |SESSION_COMP(coords_players, (x,y), coords_asteroids) -> Printf.sprintf "SESSION/%s/X%fY%f/%s/\n" (string_of_coords coords_players) x y (string_of_coords_no_name coords_asteroids)
+  |SESSION(coords_players, (x,y), coords_asteroids) -> Printf.sprintf "SESSION/%s/X%fY%f/%s/\n" (string_of_coords coords_players) x y (string_of_coords coords_asteroids)
+  |WINNER scores -> "WINNER/" ^ (string_of_scores scores) ^ "/\n"
+  |TICK_COMP vcoords -> "TICK/" ^ (string_of_vcoords vcoords) ^ "/\n"
+  |TICK(vcoords_players, vcoords_asteroids) -> "TICK/" ^ (string_of_vcoords vcoords_players) ^ "/" ^ (string_of_vcoords vcoords_asteroids) ^ "/\n"
+  |NEWOBJ((x,y), scores) ->  Printf.sprintf "NEWOBJ/X%fY%f/%s\n" x y (string_of_scores scores)
 
 end

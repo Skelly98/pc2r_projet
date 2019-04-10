@@ -67,7 +67,7 @@ public class Arena {
 				}
 			}
 			for (Obstacle obs : obstacles.values()) {
-				if (o.touching(obs)) {
+				if (!o.equals(obs) && o.touching(obs)) {
 					o.collision(obs);
 				}
 			}
