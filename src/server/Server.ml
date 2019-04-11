@@ -90,7 +90,13 @@ let server_service (chans,id) =
         |Command.FromClient.NEWCOM(angle,thrust) -> (Arena.turn id angle; Arena.accelerate id thrust)
         |Command.FromClient.UNRECOGNIZED -> () (** ignore unrecognized command *)
       done
-    with Client_exit -> ()
+    with
+      |Client_exit -> ()
+      |_ ->
+      begin
+        players.(id) <- ((stdin,stdout),Player.default);
+        message (Command.FromServer.PLAYERLEFT((snd players.(id)).name))
+      end
 
 let game () =
   while true do
@@ -99,7 +105,7 @@ let game () =
     while (not !starting) do
       Thread.delay 1.
     done;
-    Thread.delay 2.;
+    Thread.delay 3.;
     Values.phase := "jeu";
     message (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords !objective, asteroids_coords ()));
     while (not !ended) do

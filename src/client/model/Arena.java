@@ -20,7 +20,7 @@ public class Arena {
 		obj = new Objectif(2 * half_width, 2* half_length, 0.1);
 	}
 
-	public void setVehiculeCoord(String owner, double x, double y) {
+	public synchronized void setVehiculeCoord(String owner, double x, double y) {
 		if (vehicules.containsKey(owner)) {
 			vehicules.get(owner).setCoord(x, y);
 		}
@@ -29,11 +29,14 @@ public class Arena {
 		}
 	}
 
-	public void setVehiculeVcoord(String owner, double x, double y, double vx, double vy, double angle) {
+	public synchronized void setVehiculeVcoord(String owner, double x, double y, double vx, double vy, double angle) {
+		if (!vehicules.containsKey(owner)) {
+			vehicules.put(owner, new Vehicule(x, y));
+		}
 		vehicules.get(owner).setVcoord(x, y, vx, vy, angle);
 	}
 
-	public void setObstacleCoord(int id, double x, double y) {
+	public synchronized void setObstacleCoord(int id, double x, double y) {
 		if (obstacles.containsKey(id)) {
 			obstacles.get(id).setCoord(x, y);
 		}
@@ -42,17 +45,20 @@ public class Arena {
 		}
 	}
 
-	public void setObstacleVcoord(int id, double x, double y, double vx, double vy, double angle) {
-		obstacles.get(id).setVcoord(x, y, vx, vy, angle);
+	public synchronized void setObstacleVcoord(int id, double x, double y, double vx, double vy, double angle) {
+		if (!obstacles.containsKey(id)) {
+			obstacles.put(id, new Obstacle(x, y));
+		}
+			obstacles.get(id).setVcoord(x, y, vx, vy, angle);
 	}
 
-	public void moveVehicules() {
+	public synchronized void moveVehicules() {
 		for (Vehicule v : vehicules.values()) {
 			v.move();
 		}
 	}
 
-	public void moveAll() {
+	public synchronized void moveAll() {
 		for (Vehicule v : vehicules.values()) {
 			v.move();
 		}
@@ -61,7 +67,7 @@ public class Arena {
 		}
 	}
 
-	public void collisionAll() {
+	public synchronized void collisionAll() {
 		List<Obstacle> done = new ArrayList<Obstacle>();
 		for (Obstacle o : obstacles.values()) {
 			for (Vehicule v : vehicules.values()) {
@@ -78,7 +84,7 @@ public class Arena {
 		}
 	}
 
-	public void collisionVehicules() {
+	public synchronized void collisionVehicules() {
 		for (Vehicule v : vehicules.values()) {
 			for (Obstacle o : obstacles.values()) {
 				if (v.touching(o)) {
@@ -88,12 +94,36 @@ public class Arena {
 		}
 	}
 
-	public void removeVehicule(String owner) {
+	public synchronized void removeVehicule(String owner) {
 		vehicules.remove(owner);
 	}
 
-	public void setObjectif(double x, double y) {
+	public synchronized void setObjectif(double x, double y) {
 			obj.setX(x);
 			obj.setY(y);
+	}
+
+	public synchronized int[] getObjectifPaintData() {
+		return obj.getPaintData();
+	}
+
+	public synchronized List<Vehicule> getVehiculesExcept(String name) {
+		if (vehicules.containsKey(name)) {
+			List<Vehicule> res = new ArrayList<Vehicule>(vehicules.values());
+			res.remove(vehicules.get(name));
+			return res;
+		}
+		return new ArrayList<Vehicule>(vehicules.values());
+	}
+
+	public synchronized int[] getVehiculePaintData(String name) {
+		if(vehicules.containsKey(name)) {
+			return vehicules.get(name).getPaintData();
+		}
+		return null;
+	}
+
+	public synchronized List<Obstacle> getObstacles() {
+		return new ArrayList<Obstacle>(obstacles.values());
 	}
 }

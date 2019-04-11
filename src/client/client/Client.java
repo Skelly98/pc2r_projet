@@ -20,16 +20,20 @@ public class Client {
 			System.exit(1);
 		}
 		Socket s = null;
+		ObjectMover mover = null;
+		Thread window = null;
+		Thread objMover = null;
+		Thread cmdReceiver = null;
 		try {
 			s = new Socket(args[0],Integer.parseInt(args[1]));
+			mover = new ObjectMover(arena, refresh_tickrate);
+			window = new Thread(new GameWindow(s, arena, players_scores, args[2], refresh_tickrate));
+			objMover = new Thread(mover);
+			cmdReceiver = new Thread(new CommandReceiver(s, arena, mover, players_scores));
 		} catch (IOException e) {
 			System.err.println("Unknown server");
 			System.exit(1);
 		}
-		ObjectMover mover = new ObjectMover(arena, refresh_tickrate);
-		Thread window = new Thread(new GameWindow(s, arena, players_scores, args[2]));
-		Thread objMover = new Thread(mover);
-		Thread cmdReceiver = new Thread(new CommandReceiver(s, arena, mover, players_scores));
 		cmdReceiver.start();
 		objMover.start();
 		window.start();

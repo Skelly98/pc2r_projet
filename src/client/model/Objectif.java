@@ -12,23 +12,31 @@ public class Objectif {
 		this.radius = radius;
 	}
 
-	public double getX() {
+	public synchronized double getX() {
 		return x;
 	}
 
-	public double getY() {
+	public synchronized double getY() {
 		return y;
 	}
 
-	public void setX(double x) {
+	public synchronized void setX(double x) {
 		this.x = x;
 	}
 
-	public void setY(double y) {
+	public synchronized void setY(double y) {
 		this.y = y;
 	}
 
-	public double getRadius() {
+	public synchronized double getRadius() {
 		return radius;
+	}
+
+	public synchronized int[] getPaintData() {
+		int [] data = new int[3];
+		data[0] = (int) ((x + 5.) * 100);
+		data[1] = (int) ((y + 5.) * 100);
+		data[2] = (int) (radius * 100);
+		return data;
 	}
 }

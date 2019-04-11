@@ -103,7 +103,6 @@ public class CommandReceiver implements Runnable {
 							if (!compatibility_mode) {
 								setObstacleVcoords(arr[2]);
 							}
-							System.out.println("Propagation des nouvelles coordonnées : "+arr[1] );
 						}
 						break;
 					case "NEWOBJ" :
