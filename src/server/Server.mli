@@ -15,7 +15,7 @@ val asteroids_ids : int array
 (** return the players with a ship_id *)
 val real_players : unit -> ((in_channel * out_channel) * Player.t) list
 
-val objective : Object.t ref
+val objective_id : int
 
 val scores : unit -> Command.scores
 

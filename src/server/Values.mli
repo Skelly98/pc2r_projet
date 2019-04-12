@@ -15,6 +15,8 @@ val half_width : float
 
 val half_height : float
 
+val pi : float
+
 val ship_mass : float
 
 val ship_radius : float

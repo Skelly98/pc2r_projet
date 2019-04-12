@@ -16,6 +16,8 @@ val move : t -> unit
 
 val create : int -> float -> float -> t
 
+val place_at_random : t -> unit
+
 val turn : t -> float -> unit
 
 val accelerate : t -> int -> unit

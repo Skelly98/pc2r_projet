@@ -16,39 +16,39 @@ public abstract class Object {
 		id = ++cpt;
 		this.posX = posX;
 		this.posY = posY;
-		this.angle = 0;
-		this.vX = 0;
-		this.vY = 0;
+		this.angle = - Math.PI / 2;
+		this.vX = 0.;
+		this.vY = 0.;
 	}
 
 	public synchronized void move() {
 		double calcul_posX = posX + vX;
 		double calcul_posY= posY + vY;
 
-		if(calcul_posX >= -Arena.half_width && calcul_posX< Arena.half_width) {
+		if(calcul_posX >= -Arena.half_width && calcul_posX < Arena.half_width) {
 			posX = calcul_posX;
 		}
 		else if(calcul_posX < -Arena.half_width) {
-			posX = calcul_posX+ 2*Arena.half_width;
+			posX = calcul_posX + 2 * Arena.half_width;
 		}
 		else {
-			posX = calcul_posX + 2*(-Arena.half_width);
+			posX = calcul_posX - 2 * Arena.half_width;
 		}
 
-		if(calcul_posY >= -Arena.half_length && calcul_posX< Arena.half_length) {
+		if(calcul_posY >= -Arena.half_height && calcul_posY < Arena.half_height) {
 			posY = calcul_posY;
 		}
-		else if(calcul_posX < -Arena.half_length) {
-			posX = calcul_posX+ 2*Arena.half_length;
+		else if(calcul_posY < - Arena.half_height) {
+			posY = calcul_posY + 2 * Arena.half_height;
 		}
 		else {
-			posX = calcul_posX + 2*(-Arena.half_length);
+			posY = calcul_posY - 2 * Arena.half_height;
 		}
 	}
 
 	public synchronized boolean touching(Object o) {
 		synchronized (o) {
-			return Math.pow(this.posX - o.posX, 2.) + Math.pow(this.posY - o.posY, 2.) <= Math.pow(this.radius + o.radius, 2.);
+			return Math.sqrt(Math.pow(o.posX - this.posX, 2.) + Math.pow(o.posY - this.posY, 2.)) <= this.radius + o.radius;
 		}
 	}
 
@@ -81,7 +81,14 @@ public abstract class Object {
 			this.vX =  new_speed_1 * (Math.cos (new_direction_1));
 			this.vY =  new_speed_1 * (Math.sin (new_direction_1));
 			o.vX = new_speed_2 * (Math.cos(new_direction_2));
-	    	o.vY= new_speed_2 * (Math.sin(new_direction_2));
+	    o.vY= new_speed_2 * (Math.sin(new_direction_2));
+		}
+	}
+
+	public synchronized void collision_comp(Object o) {
+		synchronized (o) {
+			this.vX *= -1;
+			this.vY *= -1;
 		}
 	}
 
@@ -107,9 +114,9 @@ public abstract class Object {
 
 	public synchronized int[] getPaintData() {
 		int [] data = new int[3];
-		data[0] = (int) ((posX + 5.) * 100);
-		data[1] = (int) ((posY + 5.) * 100);
-		data[2] = (int) (radius * 100);
+		data[0] = (int) (posX - radius + Arena.half_width);
+		data[1] = (int) (posY - radius + Arena.half_height);
+		data[2] = (int) (2 * radius);
 		return data;
 	}
 }

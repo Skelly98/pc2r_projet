@@ -10,27 +10,18 @@ import model.Obstacle;
 import model.Vehicule;
 
 @SuppressWarnings("serial")
-public class MyCanvas extends JPanel {
+public class Panel extends JPanel {
 
   private Arena arena;
   private int width;
   private int height;
   private String player;
 
-  public MyCanvas(Arena arena, String player) {
+  public Panel(Arena arena, String player, int width, int height) {
     this.arena = arena;
     this.player = player;
-    setBounds(0,0,1000,1000);
+    setBounds(0, 0, width, height);
     setBackground(Color.BLACK);
-  }
-
-  public void drawVehicule(Graphics2D g, int[] paintData) {
-    int offset = paintData[2] / 2;
-    g.drawLine(paintData[0] + offset, paintData[1] + offset, paintData[0] + offset + paintData[2], paintData[1] + offset + paintData[2]);
-    offset = 5;
-    g.drawLine(paintData[0] + offset, paintData[1] + offset, paintData[0] + offset + paintData[2], paintData[1] + offset + paintData[2]);
-    offset = 3;
-    g.drawLine(paintData[0] + offset, paintData[1] + offset, paintData[0] + offset + paintData[2], paintData[1] + offset + paintData[2]);
   }
 
   @Override
@@ -42,7 +33,7 @@ public class MyCanvas extends JPanel {
     /** Objectif */
     g2D.setColor(Color.GREEN);
     int[] obj = arena.getObjectifPaintData();
-    g2D.drawOval(obj[0], obj[1], obj[2], obj[2]);
+    g2D.fillOval(obj[0], obj[1], obj[2], obj[2]);
 
     /** Obstacles */
     g2D.setColor(Color.WHITE);
@@ -53,14 +44,14 @@ public class MyCanvas extends JPanel {
 
     /** Players */
     g2D.setColor(Color.BLUE);
-    int[] player_ship = arena.getVehiculePaintData(player);
+    int[][] player_ship = arena.getVehiculePaintData(player);
     if (player_ship != null) {
-      drawVehicule(g2D, player_ship);
+      g2D.fillPolygon(player_ship[0], player_ship[1], 4);
     }
     g2D.setColor(Color.RED);
     for (Vehicule v : arena.getVehiculesExcept(player)) {
-      int[] enemy_ship = v.getPaintData();
-      drawVehicule(g2D, enemy_ship);
+      int[][] enemy_ship = v.getPaintDataPolygon();
+      g2D.fillPolygon(enemy_ship[0], enemy_ship[1], 4);
     }
   }
 }

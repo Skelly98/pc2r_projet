@@ -28,7 +28,13 @@ let collision_all_ids ids =
   in loop ids []
 
 (** create a new object with given id *)
-let add_object id mass radius = objects.(id) <- Object.create id mass radius
+let add_object id mass radius =
+  let rec loop () =
+    let obj = Object.create id mass radius in
+    if List.exists (fun o -> (Mutex.lock o.mtx; let res = (Object.touching obj o) in Mutex.unlock o.mtx; res)) (Array.to_list objects)
+      then loop ()
+      else objects.(id) <- obj
+  in loop ()
 
 let add_object_no_id mass radius =
   if refresh_id ()

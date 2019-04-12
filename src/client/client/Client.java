@@ -12,7 +12,7 @@ import view.GameWindow;
 public class Client {
 
 	public static void main(String[] args) {
-		double refresh_tickrate = .100;
+		double refresh_tickrate = 60.;
 		Arena arena = new Arena();
 		HashMap<String, Integer> players_scores = new HashMap<String, Integer>();
 		if(args.length < 3) {

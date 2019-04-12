@@ -1,6 +1,7 @@
 package client;
 
 import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
@@ -28,8 +29,7 @@ public class CommandReceiver implements Runnable {
 
 	public void run() {
 		try {
-			BufferedReader canalLecture = new BufferedReader(new InputStreamReader(s.getInputStream()));
-			BufferedReader console = new BufferedReader(new InputStreamReader(s.getInputStream()));
+			BufferedReader canalLecture = new BufferedReader(new InputStreamReader(new BufferedInputStream(s.getInputStream())));
 			System.out.println("Connexion etablie : "+ s.getInetAddress()+" port : "+ s.getPort());
 
 			String ligne = new String();
@@ -39,9 +39,6 @@ public class CommandReceiver implements Runnable {
 				ligne = canalLecture.readLine();
 				String [] arr = ligne.split("/");
 				int length = arr.length;
-				/*
-				for (int i = 0; i < length; i++)
-					System.err.println(arr[i]); */
 				switch(arr[0]) {
 					case "WELCOME":
 						if(length < 5) System.out.println("Format incorrect ! --> WELCOME/phase/scores/coord/coords");
@@ -153,14 +150,16 @@ public class CommandReceiver implements Runnable {
 		String [] obstacles = str.split("[|]");
 		for (int i = 0; i < obstacles.length; i++) {
 			String [] id_and_coord = obstacles[i].split("[:]");
-			if (id_and_coord.length == 0) {
-				boolean compatibility_mode = true;
-                mover.compatibilityMode();
+			if (id_and_coord.length == 1) {
+				compatibility_mode = true;
+        mover.compatibilityMode();
 				String [] x_and_y = obstacles[i].split("[XY]");
 				arena.setObstacleCoord(i, Double.parseDouble(x_and_y[1]), Double.parseDouble(x_and_y[2]));
 			}
-			String [] x_and_y = id_and_coord[1].split("[XY]");
-			arena.setObstacleCoord(Integer.parseInt(id_and_coord[0]), Double.parseDouble(x_and_y[1]), Double.parseDouble(x_and_y[2]));
+			else {
+				String [] x_and_y = id_and_coord[1].split("[XY]");
+				arena.setObstacleCoord(Integer.parseInt(id_and_coord[0]), Double.parseDouble(x_and_y[1]), Double.parseDouble(x_and_y[2]));
+			}
 		}
 	}
 

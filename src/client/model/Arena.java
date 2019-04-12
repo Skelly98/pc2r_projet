@@ -6,8 +6,8 @@ import java.util.ArrayList;
 
 public class Arena {
 
-	public static final double half_width = 5.;
-	public static final double half_length = 5.;
+	public static final double half_width = 500.;
+	public static final double half_height = 500.;
 	private HashMap<String, Vehicule> vehicules;
 	private HashMap<Integer, Obstacle> obstacles;
 	private Objectif obj;
@@ -17,10 +17,10 @@ public class Arena {
 		this.vehicules = new HashMap<String, Vehicule>();
 		this.obstacles = new HashMap<Integer, Obstacle>();
 		// outside
-		obj = new Objectif(2 * half_width, 2* half_length, 0.1);
+		obj = new Objectif(2 * half_width, 2* half_height, 10.);
 	}
 
-	public synchronized void setVehiculeCoord(String owner, double x, double y) {
+	public void setVehiculeCoord(String owner, double x, double y) {
 		if (vehicules.containsKey(owner)) {
 			vehicules.get(owner).setCoord(x, y);
 		}
@@ -29,14 +29,14 @@ public class Arena {
 		}
 	}
 
-	public synchronized void setVehiculeVcoord(String owner, double x, double y, double vx, double vy, double angle) {
+	public void setVehiculeVcoord(String owner, double x, double y, double vx, double vy, double angle) {
 		if (!vehicules.containsKey(owner)) {
 			vehicules.put(owner, new Vehicule(x, y));
 		}
 		vehicules.get(owner).setVcoord(x, y, vx, vy, angle);
 	}
 
-	public synchronized void setObstacleCoord(int id, double x, double y) {
+	public void setObstacleCoord(int id, double x, double y) {
 		if (obstacles.containsKey(id)) {
 			obstacles.get(id).setCoord(x, y);
 		}
@@ -45,20 +45,20 @@ public class Arena {
 		}
 	}
 
-	public synchronized void setObstacleVcoord(int id, double x, double y, double vx, double vy, double angle) {
+	public void setObstacleVcoord(int id, double x, double y, double vx, double vy, double angle) {
 		if (!obstacles.containsKey(id)) {
 			obstacles.put(id, new Obstacle(x, y));
 		}
 			obstacles.get(id).setVcoord(x, y, vx, vy, angle);
 	}
 
-	public synchronized void moveVehicules() {
+	public void moveVehicules() {
 		for (Vehicule v : vehicules.values()) {
 			v.move();
 		}
 	}
 
-	public synchronized void moveAll() {
+	public void moveAll() {
 		for (Vehicule v : vehicules.values()) {
 			v.move();
 		}
@@ -67,7 +67,7 @@ public class Arena {
 		}
 	}
 
-	public synchronized void collisionAll() {
+	public void collisionAll() {
 		List<Obstacle> done = new ArrayList<Obstacle>();
 		for (Obstacle o : obstacles.values()) {
 			for (Vehicule v : vehicules.values()) {
@@ -84,30 +84,30 @@ public class Arena {
 		}
 	}
 
-	public synchronized void collisionVehicules() {
+	public void collisionVehicules() {
 		for (Vehicule v : vehicules.values()) {
 			for (Obstacle o : obstacles.values()) {
 				if (v.touching(o)) {
-					v.collision(o);
+					v.collision_comp(o);
 				}
 			}
 		}
 	}
 
-	public synchronized void removeVehicule(String owner) {
+	public void removeVehicule(String owner) {
 		vehicules.remove(owner);
 	}
 
-	public synchronized void setObjectif(double x, double y) {
+	public void setObjectif(double x, double y) {
 			obj.setX(x);
 			obj.setY(y);
 	}
 
-	public synchronized int[] getObjectifPaintData() {
+	public int[] getObjectifPaintData() {
 		return obj.getPaintData();
 	}
 
-	public synchronized List<Vehicule> getVehiculesExcept(String name) {
+	public List<Vehicule> getVehiculesExcept(String name) {
 		if (vehicules.containsKey(name)) {
 			List<Vehicule> res = new ArrayList<Vehicule>(vehicules.values());
 			res.remove(vehicules.get(name));
@@ -116,14 +116,21 @@ public class Arena {
 		return new ArrayList<Vehicule>(vehicules.values());
 	}
 
-	public synchronized int[] getVehiculePaintData(String name) {
+	public int[][] getVehiculePaintData(String name) {
 		if(vehicules.containsKey(name)) {
-			return vehicules.get(name).getPaintData();
+			return vehicules.get(name).getPaintDataPolygon();
 		}
 		return null;
 	}
 
-	public synchronized List<Obstacle> getObstacles() {
+	public Vehicule getPlayer(String name) {
+		if(vehicules.containsKey(name)) {
+			return vehicules.get(name);
+		}
+		return null;
+	}
+
+	public List<Obstacle> getObstacles() {
 		return new ArrayList<Obstacle>(obstacles.values());
 	}
 }

@@ -21,7 +21,7 @@ let make_asteroids () =
 
 let real_players () = List.filter (fun ((_,_),p) -> p.ship_id <> -1) (Array.to_list players)
 
-let objective = ref (Object.create 0 0. Values.objective_radius)
+let objective_id = Arena.add_object_no_id 0. Values.objective_radius
 
 let scores () = List.map (fun ((_,_),p) -> (p.name,p.score)) (real_players ())
 
@@ -75,10 +75,10 @@ let server_service (chans,id) =
             (if !Values.compatibility_mode
             then begin
               message ~id:id (Command.FromServer.WELCOME_COMP(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords_comp ()));
-              if !Values.phase == "jeu" then message ~id:id (Command.FromServer.SESSION_COMP(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords !objective, asteroids_coords_comp ()))
+              if !Values.phase == "jeu" then message ~id:id (Command.FromServer.SESSION_COMP(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(objective_id), asteroids_coords_comp ()))
             end else begin
               message ~id:id (Command.FromServer.WELCOME(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords ()));
-              if !Values.phase == "jeu" then message ~id:id (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords !objective, asteroids_coords ()))
+              if !Values.phase == "jeu" then message ~id:id (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(objective_id), asteroids_coords ()))
             end);
             message (Command.FromServer.NEWPLAYER(name))
           end
@@ -87,7 +87,7 @@ let server_service (chans,id) =
             players.(id) <- ((stdin,stdout),Player.default);
             message (Command.FromServer.PLAYERLEFT(name)); raise Client_exit
           end
-        |Command.FromClient.NEWCOM(angle,thrust) -> (Arena.turn id angle; Arena.accelerate id thrust)
+        |Command.FromClient.NEWCOM(angle,thrust) -> (Arena.turn (snd players.(id)).ship_id angle; Arena.accelerate (snd players.(id)).ship_id thrust)
         |Command.FromClient.UNRECOGNIZED -> () (** ignore unrecognized command *)
       done
     with
@@ -105,9 +105,9 @@ let game () =
     while (not !starting) do
       Thread.delay 1.
     done;
-    Thread.delay 3.;
+    Thread.delay 20.;
     Values.phase := "jeu";
-    message (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords !objective, asteroids_coords ()));
+    message (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(objective_id), asteroids_coords ()));
     while (not !ended) do
       let start = Sys.time () in
       (** check scores *)
@@ -121,8 +121,8 @@ let game () =
       (** check objectif *)
       let at_least_one = ref false in
       (** we give points to all players touching the objective *)
-      List.iter (fun ((_,_),p) -> if (Player.touching p !objective) then (at_least_one := true;  p.score <- p.score + 1)) (real_players ());
-      if !at_least_one then objective := (Object.create 0 0. Values.objective_radius);
+      List.iter (fun ((_,_),p) -> if (Player.touching p Arena.objects.(objective_id)) then (at_least_one := true;  p.score <- p.score + 1)) (real_players ());
+      if !at_least_one then Object.place_at_random Arena.objects.(objective_id);
       (** check collisions *)
       (if !Values.compatibility_mode
         then List.iter (fun ((_,_),p) -> List.iter (Object.collision_comp Arena.objects.(p.ship_id)) (List.map (fun id -> Arena.objects.(id)) (Array.to_list asteroids_ids))) (real_players ())
@@ -140,7 +140,9 @@ let game () =
       (** send message TICK to everyone *)
       (if !Values.compatibility_mode
         then message (Command.FromServer.TICK_COMP(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ())))
-        else message (Command.FromServer.TICK(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ()), asteroids_vcoords ())))
+        else message (Command.FromServer.TICK(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ()), asteroids_vcoords ())));
+      (** flush everyone *)
+      List.iter (fun ((_,out),_) -> flush out) (real_players ())
     done;
     starting := false;
     ended := false;
