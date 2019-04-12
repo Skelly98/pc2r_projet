@@ -32,8 +32,8 @@ end
 module FromServer = struct
 
 type t =
-  |WELCOME_COMP of user * scores * coord * (float * float) list
-  |WELCOME of user * scores * coord * coords
+  |WELCOME_COMP of user * scores * coord * (float * float) list * int
+  |WELCOME of user * scores * coord * coords * int
   |DENIED
   |NEWPLAYER of user
   |PLAYERLEFT of user
@@ -78,8 +78,8 @@ let string_of_vcoords vcoords =
 
 let to_string cmd =
   match cmd with
-  |WELCOME_COMP(user, scores, (x,y), ocoords) -> Printf.sprintf "WELCOME/%s/%s/X%fY%f/%s/\n" !Values.phase (string_of_scores scores) x y (string_of_coords_no_name ocoords)
-  |WELCOME(user, scores, (x,y), coords) -> Printf.sprintf "WELCOME/%s/%s/X%fY%f/%s/\n" !Values.phase (string_of_scores scores) x y (string_of_coords coords)
+  |WELCOME_COMP(user, scores, (x,y), ocoords, countdown) -> Printf.sprintf "WELCOME/%s/%s/X%fY%f/%s/%d\n" !Values.phase (string_of_scores scores) x y (string_of_coords_no_name ocoords) countdown
+  |WELCOME(user, scores, (x,y), coords, countdown) -> Printf.sprintf "WELCOME/%s/%s/X%fY%f/%s/%d\n" !Values.phase (string_of_scores scores) x y (string_of_coords coords) countdown
   |DENIED -> "DENIED/\n"
   |NEWPLAYER user -> "NEWPLAYER/" ^ user ^ "/\n"
   |PLAYERLEFT user -> "PLAYERLEFT/" ^ user ^ "/\n"

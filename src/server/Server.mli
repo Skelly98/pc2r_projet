@@ -8,6 +8,8 @@ val starting : bool ref
 (** has a player won ? *)
 val ended : bool ref
 
+val countdown : int ref
+
 val players : ((in_channel * out_channel) * Player.t) array
 
 val asteroids_ids : int array

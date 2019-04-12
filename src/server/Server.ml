@@ -8,6 +8,8 @@ let starting = ref false
 
 let ended = ref false
 
+let countdown = ref 20
+
 let max_players = Values.max_players
 
 let players = Array.make max_players ((stdin,stdout),Player.default) (** stdin and stdout for default chans *)
@@ -74,13 +76,15 @@ let server_service (chans,id) =
             players.(id) <- ((inchan,outchan), Player.create name);
             (if !Values.compatibility_mode
             then begin
-              message ~id:id (Command.FromServer.WELCOME_COMP(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords_comp ()));
+              message ~id:id (Command.FromServer.WELCOME_COMP(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords_comp (), !countdown));
               if !Values.phase == "jeu" then message ~id:id (Command.FromServer.SESSION_COMP(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(objective_id), asteroids_coords_comp ()))
             end else begin
-              message ~id:id (Command.FromServer.WELCOME(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords ()));
+              message ~id:id (Command.FromServer.WELCOME(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords (), !countdown));
               if !Values.phase == "jeu" then message ~id:id (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(objective_id), asteroids_coords ()))
             end);
-            message (Command.FromServer.NEWPLAYER(name))
+            message (Command.FromServer.NEWPLAYER(name));
+            (** this flush may conflict with the one from thread game *)
+            List.iter (fun ((_,out),_) -> flush out) (real_players ())
           end
         |Command.FromClient.EXIT(name) ->
           begin
@@ -105,7 +109,11 @@ let game () =
     while (not !starting) do
       Thread.delay 1.
     done;
-    Thread.delay 20.;
+    countdown := 20;
+    for i = 0 to 19 do
+      Thread.delay 1.;
+      countdown := !countdown - 1
+    done;
     Values.phase := "jeu";
     message (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(objective_id), asteroids_coords ()));
     while (not !ended) do

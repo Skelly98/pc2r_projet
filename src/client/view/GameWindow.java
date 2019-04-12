@@ -27,6 +27,7 @@ public class GameWindow extends JFrame implements Runnable {
 	private Double refresh_tickrate;
 	private int thrust = 0;
 	private int clock = 0;
+	private int countdown = 20;
 
 	public GameWindow(Socket s, Arena arena, HashMap<String, Integer> players_scores, String player, double refresh_tickrate) throws IOException {
 		this.s = s;
@@ -36,6 +37,10 @@ public class GameWindow extends JFrame implements Runnable {
 		this.refresh_tickrate = refresh_tickrate;
 		canalEcriture = new PrintStream(s.getOutputStream());
 		p = new Panel(arena, player, (int) Arena.half_width * 2, (int) Arena.half_height * 2);
+	}
+
+	public synchronized void setCountdown(int countdown) {
+		this.countdown = countdown;
 	}
 
 	private void send(String msg) {
@@ -58,7 +63,7 @@ public class GameWindow extends JFrame implements Runnable {
         p.repaint();
 				repaint();
 				if (thrust != 0 || clock != 0) {
-					send("NEWCOM/A" + (double) - clock * Vehicule.turnit + "T" + thrust * Vehicule.thrustit + "\n");
+					send("NEWCOM/A" + (double) + clock * Vehicule.turnit + "T" + thrust * Vehicule.thrustit + "\n");
 					thrust = 0;
 					clock = 0;
 				}
@@ -68,13 +73,13 @@ public class GameWindow extends JFrame implements Runnable {
 
 		/** Key bindings */
 		p.getInputMap().put(KeyStroke.getKeyStroke("UP"), "thrust");
-		p.getInputMap().put(KeyStroke.getKeyStroke("LEFT"), "clock");
-		p.getInputMap().put(KeyStroke.getKeyStroke("RIGHT"), "anticlock");
+		p.getInputMap().put(KeyStroke.getKeyStroke("RIGHT"), "clock");
+		p.getInputMap().put(KeyStroke.getKeyStroke("LEFT"), "anticlock");
 
 		Action actionThrust = new AbstractAction() {
       public void actionPerformed(ActionEvent evt) {
 				Vehicule ship = arena.getPlayer(player);
-					if (ship != null) {
+					if (countdown == 0) {
 	          ship.thrust();
 						thrust++;
 				}
@@ -84,7 +89,7 @@ public class GameWindow extends JFrame implements Runnable {
 		Action actionClock = new AbstractAction() {
       public void actionPerformed(ActionEvent evt) {
 				Vehicule ship = arena.getPlayer(player);
-					if (ship != null) {
+					if (countdown == 0) {
 	          ship.clock();
 						clock++;
 				}
@@ -94,7 +99,7 @@ public class GameWindow extends JFrame implements Runnable {
 		Action actionAnticlock = new AbstractAction() {
       public void actionPerformed(ActionEvent evt) {
 				Vehicule ship = arena.getPlayer(player);
-					if (ship != null) {
+					if (countdown == 0) {
 	          ship.anticlock();
 						clock--;
 				}
