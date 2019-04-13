@@ -1,0 +1,53 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\begin{document}
+
+\title{Manuel d'Utilisation\\
+Arène Vectorielle Synchrone{}}
+\author{Julien Bissey\\Kelly}
+\date{15 avril 2019}
+
+\maketitle
+
+\section{Introduction}
+Le but du jeu est de déplacer un vaisseau jusqu'à un objectif pour gagner des points.\\
+Ce jeu est divisé en deux parties, Serveur et Client.
+Il suffit de faire make à la racine du jeu pour créer les exécutables dans bin.
+On peut alors lancer le serveur et les clients :\\
+\\
+Server <port>\\
+java client.Client <ip> <port> <player\_name>\\
+\\
+On peut également lancer le serveur dans un mode compatible respectant davantage le formulaire de base.\\
+\\
+Server <port> -comp\\
+\\
+La principale différence étant que le server au format compatible ne gère pas les collisions élastiques, les obstacles sont donc immobiles.
+
+\section{Serveur}
+
+Une fois le serveur lançé, il n'y a plus besoin de s'en occuper.
+Si le server print "please decrease Values.server\_tickrate", cela signifie qu'il n'a pas le temps
+de faire tous ses calculs avec son tickrate actuel. Une autre manière de pallier au problème peut être de réduire le nombre d'obstacles ou le nombre de joueurs maximum.
+Cela ne devrait pas arriver avec les constantes actuelles.\\
+
+\section{Client}
+
+Une fois le client lancé, il ouvre une fenêtre contenant :\\
+\\
+- En haut à gauche : l'écran des scores\\
+- En bas à gauche : la boîte de texte affichant les divers messages du serveur\\
+- La fenêtre principale affichant le jeu.\\
+\\
+Le vaisseau bleu est celui du joueur, les vaisseaux rouges sont ceux des ennemis. L'objectif est représenté par un disque vert, les obstacles par des cercles blancs.\\
+\\
+Le joueur dispose de 3 actions :\\
+\\
+- Flèche haute : accélerer\\
+- Flèche gauche : tourner à gauche (babord)\\
+- Flèche droite : tourner à droite (tribord)\\
+
+\end{document}
