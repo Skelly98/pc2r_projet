@@ -37,10 +37,6 @@ let create id mass radius =
   coord_y=((Random.float (2. *. Values.half_height)) -. Values.half_height);
   speed_x=0.; speed_y=0.; angle= -.Values.pi /. 2.; mass=mass; radius=radius}
 
-let place_at_random obj =
-  obj.coord_x <- ((Random.float (2. *. Values.half_width)) -. Values.half_width);
-  obj.coord_y <- ((Random.float (2. *. Values.half_height)) -. Values.half_height)
-
 let turn obj angle =
   Mutex.lock obj.mtx;
   obj.angle <- (obj.angle +. angle);
@@ -53,24 +49,27 @@ let accelerate obj thrust =
   Mutex.unlock obj.mtx
 
 (** used inside collision so no mutex (deadlock) *)
-(** also used for checking the objectives, but the only thread using that function
+(** also used for checking the objectifs, but the only thread using that function
 is also the only thread moving the objects, so we don't need any mutex *)
 let touching obj1 obj2 =
-  let x = (obj2.coord_x -. obj1.coord_x)
-  and y = (obj2.coord_y -. obj1.coord_y) in
-  let x_2 = x ** 2.
-  and y_2 = y ** 2.
-  and d = obj1.radius +. obj2.radius in
-  let sqrt_x = (sqrt x_2)
-  and sqrt_y = (sqrt y_2) in
-  obj1.id <> -1 && obj2.id <> -1 && (sqrt_x +. sqrt_y <= d)
+  (** chaining float operations gives unexpected results, so we decompose everything *)
+  if obj1.id <> -1 && obj2.id <> -1 && obj1.id <> obj2.id
+    then begin
+      let x = (obj2.coord_x -. obj1.coord_x)
+      and y = (obj2.coord_y -. obj1.coord_y) in
+      let x_square = x ** 2.
+      and y_square = y ** 2.
+      and d = obj1.radius +. obj2.radius in
+      let somme = x_square +. y_square in
+      let d_square = d ** 2. in
+      somme <= d_square
+    end else false
 
 (** no interblocage as this is the only function using 2 mutex *)
 let collision_comp obj1 obj2 =
   Mutex.lock obj1.mtx;
   (if obj1.id <> obj2.id
-    then Mutex.lock obj2.mtx
-    else ());
+    then Mutex.lock obj2.mtx);
   (if touching obj1 obj2
     then begin
       obj1.speed_x <- -. obj1.speed_x;
@@ -83,38 +82,54 @@ let collision_comp obj1 obj2 =
 let collision obj1 obj2 =
   Mutex.lock obj1.mtx;
   (if obj1.id <> obj2.id
-    then Mutex.lock obj2.mtx
-    else ());
+    then Mutex.lock obj2.mtx);
   (if touching obj1 obj2
     then begin
-      (** src : http://owl-ge.ch/IMG/pdf/choc_2D_avec_citation.pdf (page 12) *)
-      (** definitions of constants *)
-      let direction_1 = acos (obj1.speed_x +. obj1.speed_y)
-      and direction_2 = acos (obj2.speed_x +. obj2.speed_y)
-      and temp_speed_1 = sqrt (obj1.speed_x**2. +. obj1.speed_y**2.)
-      and temp_speed_2 = sqrt (obj2.speed_x**2. +. obj2.speed_y**2.)
-      and m1_m2_div_m1_m2 = (obj1.mass -. obj2.mass) /. (obj1.mass +. obj2.mass)
-      and m2_m1_div_m2_m1 = (obj2.mass -. obj1.mass) /. (obj2.mass +. obj1.mass)
-      and _2_m2_div_m1_m2 = (2. *. obj2.mass ) /. (obj1.mass +. obj2.mass)
-      and _2_m1_div_m1_m2 = (2. *. obj1.mass ) /. (obj1.mass +. obj2.mass) in
+      let xDist = obj1.coord_x -. obj2.coord_x
+      and yDist = obj1.coord_y -. obj2.coord_y in
+      let xDistSquared = xDist ** 2.
+      and yDistSquared = yDist ** 2. in
+      let distSquared = xDistSquared +. yDistSquared
+      and xVelocity = obj2.speed_x -. obj1.speed_x
+      and yVelocity = obj2.speed_y -. obj1.speed_y in
+      let x_dotProduct = xDist *. xVelocity
+      and y_dotProduct = yDist *. yVelocity in
+      let dotProduct = x_dotProduct +. y_dotProduct in
+      (** Neat vector maths, used for checking if the objects moves towards one another. *)
+      (if dotProduct > 0.
+        then begin
+          let collisionScale = dotProduct /. distSquared in
+          let xCollision = xDist *. collisionScale
+          and yCollision = yDist *. collisionScale
+          (** The Collision vector is the speed difference projected on the Dist vector, *)
+          (** thus it is the component of the speed difference needed for the collision. *)
+          and combinedMass = obj1.mass +. obj2.mass in
+          let _2_mass_1 = 2. *. obj1.mass
+          and _2_mass_2 = 2. *. obj2.mass in
+          let collisionWeight1 = _2_mass_2 /. combinedMass
+          and collisionWeight2 = _2_mass_1 /. combinedMass in
 
-      (** avoid div by 0 *)
-      let speed_1 = (if temp_speed_1 <> 0. then temp_speed_1 else Values.god_intervention)
-      and speed_2 = (if temp_speed_2 <> 0. then temp_speed_2 else Values.god_intervention) in
+          let speed_x_1 = collisionWeight1 *. xCollision
+          and speed_y_1 = collisionWeight1 *. yCollision
+          and speed_x_2 = collisionWeight2 *. xCollision
+          and speed_y_2 = collisionWeight2 *. yCollision in
 
-      (** calcul *)
-      let new_direction_1 = atan (m1_m2_div_m1_m2 *. (tan direction_1)
-        +. (_2_m2_div_m1_m2 *. speed_2 *. (sin direction_2)) /. (speed_1 *. (cos direction_1)))
-      and new_direction_2 = atan (m2_m1_div_m2_m1 *. (tan direction_2)
-        +. (_2_m1_div_m1_m2 *. speed_1 *. (sin direction_1)) /. (speed_2 *. (cos direction_2))) in
-      let new_speed_1 = sqrt ((m1_m2_div_m1_m2 *. speed_1 *. (sin direction_1) +. _2_m2_div_m1_m2 *. speed_2 *. (sin direction_2))**2. +. (speed_1 *. (cos direction_1))**2.)
-      and new_speed_2 = sqrt ((m2_m1_div_m2_m1 *. speed_2 *. (sin direction_2) +. _2_m1_div_m1_m2 *. speed_1 *. (sin direction_1))**2. +. (speed_2 *. (cos direction_2))**2.) in
+          let new_speed_x_1 = obj1.speed_x +. speed_x_1
+          and new_speed_y_1 = obj1.speed_y +. speed_y_1
+          and new_speed_x_2 = obj2.speed_x -. speed_x_2
+          and new_speed_y_2 = obj2.speed_y -. speed_y_2 in
 
-      (** new speeds *)
-      obj1.speed_x <- new_speed_1 *. (cos new_direction_1);
-      obj1.speed_y <- new_speed_1 *. (sin new_direction_1);
-      obj2.speed_x <- new_speed_2 *. (cos new_direction_2);
-      obj2.speed_y <- new_speed_2 *. (sin new_direction_2)
+          obj1.speed_x <- new_speed_x_1;
+          obj1.speed_y <- new_speed_y_1;
+          obj2.speed_x <- new_speed_x_2;
+          obj2.speed_y <- new_speed_y_2
+
+        end);
     end);
   Mutex.unlock obj2.mtx;
   Mutex.unlock obj1.mtx
+
+let freeze obj =
+  obj.speed_x <- 0.;
+  obj.speed_y <- 0.;
+  obj.angle <- -.Values.pi /. 2.

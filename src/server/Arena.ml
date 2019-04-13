@@ -15,18 +15,6 @@ let refresh_id () =
     |_ -> if ind < Values.max_objects then loop (ind + 1) else (Mutex.unlock mtx; false)
   in loop 0
 
-(** Array.iter of move *)
-let move_all () = Array.iter Object.move objects
-
-let move_all_ids ids = List.iter (fun id -> Object.move objects.(id)) ids
-
-let collision_all_ids ids =
-  let rec loop ids acc =
-    match ids with
-    |hd::tl -> ((Array.iter (fun obj -> if (not (List.mem obj.id acc)) then Object.collision objects.(hd) obj) objects); loop tl (hd::acc))
-    |[] -> ()
-  in loop ids []
-
 (** create a new object with given id *)
 let add_object id mass radius =
   let rec loop () =
@@ -38,8 +26,30 @@ let add_object id mass radius =
 
 let add_object_no_id mass radius =
   if refresh_id ()
-    then (objects.(!new_object_id) <- Object.create !new_object_id mass radius; !new_object_id)
+    then (add_object !new_object_id mass radius; !new_object_id)
     else -1
+
+(** Array.iter of move *)
+let move_all () = Array.iter Object.move objects
+
+let move_all_ids ids = List.iter (fun id -> Object.move objects.(id)) ids
+
+let objectif_id = add_object_no_id 0. Values.objectif_radius
+
+let list_integers =
+  let rec loop n acc =
+    match n with
+    |0 -> acc
+    |x -> loop (x - 1) (x::acc)
+  in loop (Values.max_objects - 1) []
+
+
+let collision_all () =
+  let rec loop ids acc =
+    match ids with
+    |hd::tl -> ((Array.iter (fun obj -> if (not (List.mem obj.id acc)) then Object.collision objects.(hd) obj) objects); loop tl (hd::acc))
+    |[] -> ()
+  in loop list_integers [objectif_id] (** we don't want a moving objectif *)
 
 (** set id of a given object to -1 *)
 let remove_object id = Object.delete objects.(id)

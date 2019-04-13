@@ -21,7 +21,7 @@ val ship_mass : float
 
 val ship_radius : float
 
-val objective_radius : float
+val objectif_radius : float
 
 val asteroid_mass : float
 

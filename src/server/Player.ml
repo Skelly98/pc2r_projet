@@ -1,8 +1,8 @@
 type t = {name: string; ship_id: int; mutable score: int}
 
-let create name =
+let create player_name =
   let id = Arena.add_object_no_id Values.ship_mass Values.ship_radius in
-  {name = name; ship_id = id; score = 0}
+  {name = player_name; ship_id = id; score = 0}
 
 let default = {name = ""; ship_id = -1; score = 0}
 

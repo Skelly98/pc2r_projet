@@ -17,7 +17,7 @@ public class Arena {
 		this.vehicules = new HashMap<String, Vehicule>();
 		this.obstacles = new HashMap<Integer, Obstacle>();
 		// outside
-		obj = new Objectif(2 * half_width, 2* half_height, 10.);
+		obj = new Objectif(2 * half_width, 2* half_height, 20.);
 	}
 
 	public void setVehiculeCoord(String owner, double x, double y) {
@@ -68,7 +68,7 @@ public class Arena {
 	}
 
 	public void collisionAll() {
-		List<Obstacle> done = new ArrayList<Obstacle>();
+		List<Object> done = new ArrayList<Object>();
 		for (Obstacle o : obstacles.values()) {
 			for (Vehicule v : vehicules.values()) {
 				if (o.touching(v)) {
@@ -81,6 +81,14 @@ public class Arena {
 				}
 			}
 			done.add(o);
+		}
+		for (Vehicule v1 : vehicules.values()) {
+			for (Vehicule v2 : vehicules.values()) {
+				if (!v1.equals(v2) && ! done.contains(v2) && v1.touching(v2)) {
+					v1.collision(v2);
+				}
+			}
+			done.add(v1);
 		}
 	}
 

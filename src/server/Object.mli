@@ -16,8 +16,6 @@ val move : t -> unit
 
 val create : int -> float -> float -> t
 
-val place_at_random : t -> unit
-
 val turn : t -> float -> unit
 
 val accelerate : t -> int -> unit
@@ -27,3 +25,5 @@ val touching : t -> t -> bool
 val collision_comp : t -> t -> unit
 
 val collision : t -> t -> unit
+
+val freeze : t -> unit

@@ -27,7 +27,7 @@ public class GameWindow extends JFrame implements Runnable {
 	private Double refresh_tickrate;
 	private int thrust = 0;
 	private int clock = 0;
-	private int countdown = 20;
+	private int countdown = 10;
 
 	public GameWindow(Socket s, Arena arena, HashMap<String, Integer> players_scores, String player, double refresh_tickrate) throws IOException {
 		this.s = s;
@@ -45,6 +45,7 @@ public class GameWindow extends JFrame implements Runnable {
 
 	private void send(String msg) {
 		canalEcriture.println(msg);
+		canalEcriture.flush();
 	}
 
 	public void run() {

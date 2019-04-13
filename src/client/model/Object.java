@@ -55,33 +55,28 @@ public abstract class Object {
 	public synchronized void collision(Object o) {
 		synchronized (o) {
 
-			//def des constantes
-			double direction1 = Math.acos(this.vX + o.vX);
-			double direction2 = Math.acos(this.vY + o.vY);
-			double v1 = Math.sqrt(Math.pow(this.vX, 2.) + Math.pow(this.vY, 2.));
-			double v2 = Math.sqrt(Math.pow(o.vX, 2.) + Math.pow(o.vY, 2.));
-			double m1_m2_div_m1_m2 = (this.mass - o.mass) / (this.mass + o.mass);
-			double m2_m1_div_m2_m1 = (o.mass - this.mass) / (o.mass + this.mass);
-			double _2_m2_div_m1_m2 = (2. * o.mass ) / (this.mass + o.mass);
-			double _2_m1_div_m1_m2 = (2. * this.mass ) / (this.mass + o.mass);
+			double xDist = this.posX - o.posX;
+      double yDist = this.posY - o.posY;
+			double distSquared = xDist*xDist + yDist*yDist;
+			double xVelocity = o.vX - this.vX;
+      double yVelocity = o.vY - this.vY;
+      double dotProduct = xDist*xVelocity + yDist*yVelocity;
+      //Neat vector maths, used for checking if the objects moves towards one another.
+      if(dotProduct > 0){
+        double collisionScale = dotProduct / distSquared;
+        double xCollision = xDist * collisionScale;
+        double yCollision = yDist * collisionScale;
+        //The Collision vector is the speed difference projected on the Dist vector,
+        //thus it is the component of the speed difference needed for the collision.
+        double combinedMass = this.mass + o.mass;
+        double collisionWeight1 = 2 * o.mass / combinedMass;
+        double collisionWeight2 = 2 * this.mass / combinedMass;
 
-			//empeche div par 0
-			v1 = (v1 == 0. ? 0.000001 : v1);
-			v2 = (v2 == 0. ? 0.000001 : v2);
-
-			//calcul
-			double new_direction_1 = Math.atan (m1_m2_div_m1_m2 * (Math.tan(direction1))
-			+ (_2_m2_div_m1_m2 * v2 * (Math.sin(direction2)) / (v1 * (Math.cos(direction1)))));
-			double new_direction_2 = Math.atan (m2_m1_div_m2_m1 * (Math.tan(direction2))
-			+ (_2_m1_div_m1_m2 * v1 * (Math.sin(direction1))) / (v2 * (Math.cos(direction2))));
-			double new_speed_1 = Math.sqrt (Math.pow((m1_m2_div_m1_m2 * v1 * (Math.sin(direction1)) + _2_m2_div_m1_m2 * v2 * Math.sin(direction2)), 2.) + Math.pow(v1 * (Math.cos(direction1)), 2.));
-			double new_speed_2 = Math.sqrt (Math.pow((m2_m1_div_m2_m1 * v2 * (Math.sin(direction2)) + _2_m1_div_m1_m2 * v2 * Math.sin(direction1)), 2.) + Math.pow(v2 * (Math.cos(direction2)), 2.));
-
-			//affectation des nouvelles vitesses
-			this.vX =  new_speed_1 * (Math.cos (new_direction_1));
-			this.vY =  new_speed_1 * (Math.sin (new_direction_1));
-			o.vX = new_speed_2 * (Math.cos(new_direction_2));
-	    o.vY= new_speed_2 * (Math.sin(new_direction_2));
+        this.vX += collisionWeight1 * xCollision;
+        this.vY += collisionWeight1 * yCollision;
+        o.vX -= collisionWeight2 * xCollision;
+        o.vY -= collisionWeight2 * yCollision;
+      }
 		}
 	}
 

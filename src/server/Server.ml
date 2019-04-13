@@ -8,7 +8,7 @@ let starting = ref false
 
 let ended = ref false
 
-let countdown = ref 20
+let countdown = ref 10
 
 let max_players = Values.max_players
 
@@ -22,8 +22,6 @@ let make_asteroids () =
   done
 
 let real_players () = List.filter (fun ((_,_),p) -> p.ship_id <> -1) (Array.to_list players)
-
-let objective_id = Arena.add_object_no_id 0. Values.objective_radius
 
 let scores () = List.map (fun ((_,_),p) -> (p.name,p.score)) (real_players ())
 
@@ -77,10 +75,10 @@ let server_service (chans,id) =
             (if !Values.compatibility_mode
             then begin
               message ~id:id (Command.FromServer.WELCOME_COMP(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords_comp (), !countdown));
-              if !Values.phase == "jeu" then message ~id:id (Command.FromServer.SESSION_COMP(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(objective_id), asteroids_coords_comp ()))
+              if !Values.phase == "jeu" then message ~id:id (Command.FromServer.SESSION_COMP(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(Arena.objectif_id), asteroids_coords_comp ()))
             end else begin
               message ~id:id (Command.FromServer.WELCOME(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords (), !countdown));
-              if !Values.phase == "jeu" then message ~id:id (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(objective_id), asteroids_coords ()))
+              if !Values.phase == "jeu" then message ~id:id (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(Arena.objectif_id), asteroids_coords ()))
             end);
             message (Command.FromServer.NEWPLAYER(name));
             (** this flush may conflict with the one from thread game *)
@@ -88,6 +86,7 @@ let server_service (chans,id) =
           end
         |Command.FromClient.EXIT(name) ->
           begin
+            Arena.remove_object (snd players.(id)).ship_id;
             players.(id) <- ((stdin,stdout),Player.default);
             message (Command.FromServer.PLAYERLEFT(name)); raise Client_exit
           end
@@ -98,8 +97,9 @@ let server_service (chans,id) =
       |Client_exit -> ()
       |_ ->
       begin
-        players.(id) <- ((stdin,stdout),Player.default);
-        message (Command.FromServer.PLAYERLEFT((snd players.(id)).name))
+        Arena.remove_object (snd players.(id)).ship_id;
+        message (Command.FromServer.PLAYERLEFT((snd players.(id)).name));
+        players.(id) <- ((stdin,stdout),Player.default)
       end
 
 let game () =
@@ -109,13 +109,13 @@ let game () =
     while (not !starting) do
       Thread.delay 1.
     done;
-    countdown := 20;
-    for i = 0 to 19 do
+    countdown := 10;
+    for i = 0 to 9 do
       Thread.delay 1.;
       countdown := !countdown - 1
     done;
     Values.phase := "jeu";
-    message (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(objective_id), asteroids_coords ()));
+    message (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(Arena.objectif_id), asteroids_coords ()));
     while (not !ended) do
       let start = Sys.time () in
       (** check scores *)
@@ -123,18 +123,22 @@ let game () =
         if (snd players.(i)).score >= Values.max_score
           then begin
             ended := true;
-            message (Command.FromServer.WINNER((scores ())))
+            message (Command.FromServer.WINNER((scores ())));
           end
       done;
       (** check objectif *)
       let at_least_one = ref false in
-      (** we give points to all players touching the objective *)
-      List.iter (fun ((_,_),p) -> if (Player.touching p Arena.objects.(objective_id)) then (at_least_one := true;  p.score <- p.score + 1)) (real_players ());
-      if !at_least_one then Object.place_at_random Arena.objects.(objective_id);
+      (** we give points to all players touching the objectif *)
+      List.iter (fun ((_,_),p) -> if (Player.touching p Arena.objects.(Arena.objectif_id)) then (at_least_one := true;  p.score <- p.score + 1)) (real_players ());
+      (if !at_least_one
+        then begin
+          Arena.add_object Arena.objectif_id 0. Values.objectif_radius;
+          message (Command.FromServer.NEWOBJ(Object.coords Arena.objects.(Arena.objectif_id), scores ()))
+        end);
       (** check collisions *)
       (if !Values.compatibility_mode
         then List.iter (fun ((_,_),p) -> List.iter (Object.collision_comp Arena.objects.(p.ship_id)) (List.map (fun id -> Arena.objects.(id)) (Array.to_list asteroids_ids))) (real_players ())
-        else Arena.collision_all_ids (Array.to_list asteroids_ids));
+        else Arena.collision_all ());
       (** move objects *)
       (if !Values.compatibility_mode
         then Arena.move_all_ids (List.map (fun ((_,_),p) -> p.ship_id) (real_players ()))
@@ -154,6 +158,8 @@ let game () =
     done;
     starting := false;
     ended := false;
+    Array.iter Arena.remove_object asteroids_ids;
+    List.iter (fun ((_,_),p) -> p.score <- 0; Object.freeze Arena.objects.(p.ship_id)) (real_players ());
     Values.phase := "attente"
   done
 

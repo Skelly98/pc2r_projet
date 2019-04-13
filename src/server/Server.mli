@@ -17,8 +17,6 @@ val asteroids_ids : int array
 (** return the players with a ship_id *)
 val real_players : unit -> ((in_channel * out_channel) * Player.t) list
 
-val objective_id : int
-
 val scores : unit -> Command.scores
 
 val asteroids_coords_comp : unit -> (float * float) list

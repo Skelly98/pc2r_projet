@@ -66,6 +66,8 @@ public class CommandReceiver implements Runnable {
 						System.out.println("Le joueur "+ arr[1] +" s'est connecté");
 						break;
 					case "PLAYERLEFT" :
+						for (String s : arr)
+							System.out.println(s);
 						players_scores.remove(arr[1]);
 						arena.removeVehicule(arr[1]);
 						System.out.println("Le joueur "+ arr[1] +" s'est déconnecté");
@@ -81,6 +83,7 @@ public class CommandReceiver implements Runnable {
 						break;
 					case "WINNER" :
 						game_phase = false;
+						gw.setCountdown(10);
 						System.out.println("Session terminée.\nScores finaux : "+arr[1] );
 						break;
 					case "TICK" :

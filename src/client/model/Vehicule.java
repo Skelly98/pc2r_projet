@@ -12,11 +12,11 @@ public class Vehicule extends Object{
 	}
 
 	public synchronized void clock() {
-		angle -= turnit;
+		angle += turnit;
 	}
 
 	public synchronized void anticlock() {
-		angle += turnit;
+		angle -= turnit;
 	}
 
 	public synchronized void thrust() {
