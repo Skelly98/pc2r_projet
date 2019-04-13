@@ -3,9 +3,13 @@ Arènes Vectorielles Synchrones
 
 TODO :  
   Server :  
-    Object.collison  
+    improve ending of a session (stop objects movement)  
 
   Client :  
-  
-    - Communication with Server  
-    - User Interface with swing
+    - "ScoreBox" at top left  
+    - "ServerTalkBox" at bottom left  
+    - improve the size of Panel (not perfect at the borders)
+
+IF TIME :      
+    - Polygons for asteroids  
+    - not only localhost  
