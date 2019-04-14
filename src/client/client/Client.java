@@ -43,9 +43,7 @@ public class Client {
 		// quit game
 		try {
 			window.join();
-		} catch (InterruptedException ie) {
-			System.err.println("Exit game");
-		}
+		} catch (InterruptedException ie) {}
 		objMover.interrupt();
 		cmdReceiver.interrupt();
 	}

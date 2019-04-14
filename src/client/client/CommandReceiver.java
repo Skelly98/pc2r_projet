@@ -39,13 +39,15 @@ public class CommandReceiver implements Runnable {
 	public void run() {
 		try {
 			BufferedReader canalLecture = new BufferedReader(new InputStreamReader(new BufferedInputStream(s.getInputStream())));
-			System.out.println("Connexion etablie : "+ s.getInetAddress()+" port : "+ s.getPort());
-
 			String ligne = new String();
-			char c;
 
 			while(true) {
 				ligne = canalLecture.readLine();
+				if (ligne == null) {
+					System.out.println("Server is not responding. Closing the game.");
+					gw.serverOut();
+					return;
+				}
 				String [] arr = ligne.split("/");
 				int length = arr.length;
 				switch(arr[0]) {

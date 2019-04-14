@@ -7,6 +7,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.Socket;
@@ -38,6 +39,10 @@ public class GameWindow extends JFrame implements Runnable {
 
 	public synchronized void setGamePhase(boolean game_phase) {
 		this.game_phase = game_phase;
+	}
+
+	public void serverOut() {
+		dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 	}
 
 	private void send(String msg) {
