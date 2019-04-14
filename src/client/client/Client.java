@@ -43,8 +43,8 @@ public class Client {
 		// quit game
 		try {
 			window.join();
+			objMover.interrupt();
+			cmdReceiver.interrupt();
 		} catch (InterruptedException ie) {}
-		objMover.interrupt();
-		cmdReceiver.interrupt();
 	}
 }

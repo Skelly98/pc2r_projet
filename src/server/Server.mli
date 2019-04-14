@@ -1,4 +1,5 @@
 exception Client_exit
+exception Client_denied
 
 val new_player_id : int ref
 

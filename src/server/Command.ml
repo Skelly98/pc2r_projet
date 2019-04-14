@@ -14,9 +14,9 @@ type t =
 
 let of_string cmd =
   match String.split_on_char '/' cmd with
-  |["CONNECT";name] -> CONNECT(name)
-  |["EXIT";name] -> EXIT(name)
-  |["NEWCOM";comms] -> (if comms.[0] = 'A' (** A or T *)
+  |"CONNECT"::name::_ -> CONNECT(name)
+  |"EXIT"::name::_ -> EXIT(name)
+  |"NEWCOM"::comms::_ -> (if comms.[0] = 'A' (** A or T *)
                           then match String.split_on_char 'T' comms with
                                 |[a_to_float; to_int] -> NEWCOM( (float_of_string (String.sub a_to_float 1 ((String.length a_to_float) - 1))),
                                                                  (int_of_string to_int))

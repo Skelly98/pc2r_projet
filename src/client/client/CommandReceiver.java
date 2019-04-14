@@ -16,8 +16,6 @@ import view.GameWindow;
 
 public class CommandReceiver implements Runnable {
 
-	protected static final int PORT=45678;
-
 	private Socket s;
 	private boolean game_phase = false;
 	private boolean compatibility_mode = false;
@@ -58,13 +56,14 @@ public class CommandReceiver implements Runnable {
 						}
 						setPlayers(arr[2]);
 						String [] x_and_y = arr[3].split("[XY]");
-						arena.setVehiculeCoord(player, Double.parseDouble(x_and_y[1]), Double.parseDouble(x_and_y[2]));
+						arena.setObjectif(Double.parseDouble(x_and_y[1]), Double.parseDouble(x_and_y[2]));
 						setObstaclesCoords(arr[4]);
 						System.out.println("Welcome!\nPhase: " + arr[1]);
 						printScores();
 						break;
 					case "DENIED" :
 						System.out.println("Connexion denied.");
+						gw.serverOut();
 						return;
 					case "NEWPLAYER" :
 						players_scores.put(arr[1], 0);

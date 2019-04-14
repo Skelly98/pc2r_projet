@@ -9,7 +9,7 @@ let max_players = 20
 
 let nb_asteroids = 15
 
-let max_score = 10
+let max_score = 1
 
 let countdown = 10.
 

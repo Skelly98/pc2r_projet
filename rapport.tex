@@ -7,15 +7,15 @@
 
 \title{Rapport\\
 Arène Vectorielle Synchrone{}}
-\author{Julien Bissey\\Kelly}
+\author{Julien Bissey\\Kelly Seng}
 \date{15 avril 2019}
 
 \maketitle
 
 \section{Introduction}
 
-Ce projet est divisé en deux parties, Serveur et Client.\\
-Le serveur a été codé en OCaml, le client en Java.\\
+Ce projet est divisé en deux parties, Serveur et Client.
+Le serveur a été codé en OCaml, le client en Java.
 Un manuel d'utilisation est disponnible dans le dossier doc. Le dossier src contient les sources du client et du serveur.\\
 \\
 Concernant les extensions :\\
@@ -28,12 +28,18 @@ Le serveur est composé d'une thread principale lançant les autres threads, une
 associant les nouveaux clients à une nouvelle thread, une thread par client qui reçoit les requêtes de ce client et y répond si nécessaire,
 et enfin une thread qui contrôle le déroulement du jeu, met à jour les positions des différents objets, etc.\\
 \\
+On peut refuser la connection à un client pour deux raisons : soit le serveur gère déjà le nombre maximal de joueurs, soit le client veut utiliser un
+pseudo déjà pris par un autre joueur.\\
+\\
 On conserve tous les objets de l'arène dans un unique tableau dans le module Arena. On a choisi un tableaux car on a souvent besoin d'accéder à un
 élement particulier de la structure (pour exécuter les requêtes de type NEWCOMS notamment).\\
+\\
+Toutes les constantes utilisées par le serveur sont situées dans le module Values, on peut donc facilement les modifier.\\
 \\
 Concernant les ajouts au formulaire :\\
 Lorsqu'un nouveau joueur se connecte à une partie déjà en cours, en plus du WELCOME, on lui envoie également un SESSION et un NEWOBJ
 pourqu'il ait immédiatement connaissance des autres joueurs et de l'objectif actuel.\\
+\\
 Comme les chocs élastiques font se déplacer les obstacles, il faut pouvoir les identifier lorsqu'on donne leurs nouvelles coordonnées aux clients.
 On remplace donc le message ocoords des requêtes WELCOME et SESSION par coords (un nom en plus des simples coordonnées) et on ajoute un autre message
 vcoords à TICK. Pour annuler ces changements et respecter la norme du formulaire, il faut lancer le serveur avec l'option -comp.
@@ -46,19 +52,22 @@ une thread recevant les messages du serveur, modifiant les données du jeu en co
 dans le terminal (arrivée et départ de nouveaux joueurs, et scores notamment), et enfin une thread consacrée à l'interface graphique du client.\\
 \\
 La thread déplaçant les objets s'occupe uniquement des mouvements et des collisions, elle ne s'intéresse donc pas à l'objectif, le serveur seul décide si
-un joueur gagne un point ou non.
+un joueur gagne un point ou non.\\
 \\
 L'interface graphique est composé d'une unique fenêtre affichant l'arène. A part pouir l'objectif, nous avont utilisé des polygônes pour représenter les différents
-objets de l'arène. Puisque tous les objets ont une hitbox en forme de cercle, nous avont utilisé des polygônes ayant une forme proche d'un cercle.\\
+objets de l'arène. Puisque tous les objets ont une hitbox en forme de cercle, nous avons utilisé des polygônes ayant une forme proche d'un cercle.\\
+\\
 Pour les vaisseaux : le polygône lie 3 points du cercle formant un triangle, ainsi que le centre du cercle, cela donne une forme de flèche
-permettant de facilement repérer l'orientation du vaisseaux.
+permettant de facilement repérer l'orientation du vaisseau.\\
+\\
 Pour les obstacles : un polygône de 12 points choisis aléatoirement, de tel sorte qu'ils soient suffisamment proches du cercle pour que leur forme
-soit en accord avec leur hitbox tout en étant irréguliers. De plus, on fait tourner chaque obstacle dans un sens et à une vitesse aléatoire. On a donc besoin
+soit en accord avec leur hitbox tout en étant irréguliers. De plus, on fait tourner chaque obstacle dans un sens et à une vitesse aléatoires. On a donc besoin
 d'ignorer la valeur d'angle envoyée par le serveur à chaque TICK (on pourrait ne pas l'envoyer, mais cela forcerait à traiter les vaisseaux et les obstacles encore plus
 différement pour un gain de performance négligeable).\\
 \\
 Pour quitter le jeu, il suffit de fermer la fenêtre. Cela n'envoie pas de message EXIT au serveur (de fait, le client tel qu'on l'a écrit n'envoie jamais de message EXIT),
-Mais le serveur a été fait de telle sorte qu'il considère un client qui ne répond plus comme un client sortant du jeu de manière contrôlée.\\
-De même, si le serveur s'arrête de manière imprévue, le client va en informer le joueur dans le terminal puis quitter le jeu.
+mais le serveur a été fait de telle sorte qu'il considère un client qui ne répond plus comme un client sortant du jeu de manière contrôlée.\\
+\\
+De même, si le serveur s'arrête de manière imprévue, le client va en informer le joueur dans le terminal et quitter le jeu.
 
 \end{document}

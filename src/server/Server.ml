@@ -1,6 +1,7 @@
 open Player
 
 exception Client_exit
+exception Client_denied
 
 let new_player_id = ref 0
 
@@ -67,28 +68,30 @@ let server_service (chans,id) =
       while true do
         match Command.FromClient.of_string (input_line inchan) with
         |Command.FromClient.CONNECT(name) ->
-          begin
-            players.(id) <- ((inchan,outchan), Player.create name);
-            (if !Values.compatibility_mode
-            then begin
-              message ~id:id (Command.FromServer.WELCOME_COMP(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords_comp ()));
-              if !Values.phase == "jeu"
-                then begin
-                  message ~id:id (Command.FromServer.SESSION_COMP(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(Arena.objectif_id), asteroids_coords_comp ()));
-                  message ~id:id (Command.FromServer.NEWOBJ(Object.coords Arena.objects.(Arena.objectif_id), scores ()))
-                end
-            end else begin
-              message ~id:id (Command.FromServer.WELCOME(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords ()));
-              if !Values.phase == "jeu"
-                then begin
-                  message ~id:id (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(Arena.objectif_id), asteroids_coords ()));
-                  message ~id:id (Command.FromServer.NEWOBJ(Object.coords Arena.objects.(Arena.objectif_id), scores ()))
-                end
-            end);
-            message (Command.FromServer.NEWPLAYER(name));
-            (** this flush may conflict with the one from thread game *)
-            List.iter (fun ((_,out),_) -> flush out) (real_players ())
-          end
+          (if (List.exists (fun ((_,_),p) -> p.name = name) (real_players ()))
+            then (output_string outchan (Command.FromServer.to_string (Command.FromServer.DENIED)); flush outchan; raise Client_denied)
+            else begin
+              players.(id) <- ((inchan,outchan), Player.create name);
+              (if !Values.compatibility_mode
+              then begin
+                message ~id:id (Command.FromServer.WELCOME_COMP(name,(scores ()), Object.coords Arena.objects.(Arena.objectif_id), asteroids_coords_comp ()));
+                if !Values.phase == "jeu"
+                  then begin
+                    message ~id:id (Command.FromServer.SESSION_COMP(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(Arena.objectif_id), asteroids_coords_comp ()));
+                    message ~id:id (Command.FromServer.NEWOBJ(Object.coords Arena.objects.(Arena.objectif_id), scores ()))
+                  end
+              end else begin
+                message ~id:id (Command.FromServer.WELCOME(name,(scores ()), Object.coords Arena.objects.(Arena.objectif_id), asteroids_coords ()));
+                if !Values.phase == "jeu"
+                  then begin
+                    message ~id:id (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(Arena.objectif_id), asteroids_coords ()));
+                    message ~id:id (Command.FromServer.NEWOBJ(Object.coords Arena.objects.(Arena.objectif_id), scores ()))
+                  end
+              end);
+              message (Command.FromServer.NEWPLAYER(name));
+              (** this flush may conflict with the one from thread game *)
+              List.iter (fun ((_,out),_) -> flush out) (real_players ())
+            end)
         |Command.FromClient.EXIT(name) ->
           begin
             Arena.remove_object (snd players.(id)).ship_id;
@@ -99,7 +102,7 @@ let server_service (chans,id) =
         |Command.FromClient.UNRECOGNIZED -> () (** ignore unrecognized command *)
       done
     with
-      |Client_exit -> ()
+      |Client_exit | Client_denied -> ()
       |_ ->
       begin
         Arena.remove_object (snd players.(id)).ship_id;
