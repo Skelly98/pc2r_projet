@@ -20,6 +20,11 @@ public class Arena {
 		obj = new Objectif(2 * half_width, 2* half_height, 20.);
 	}
 
+	public void clear() {
+		vehicules.clear();
+		obstacles.clear();
+	}
+
 	public void setVehiculeCoord(String owner, double x, double y) {
 		if (vehicules.containsKey(owner)) {
 			vehicules.get(owner).setCoord(x, y);

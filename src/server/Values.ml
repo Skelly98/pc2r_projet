@@ -1,12 +1,12 @@
 let server_tickrate = 60.
 
-let max_objects = 50
+let max_objects = 40
 
 let max_players = 20
 
-let nb_asteroids = 10
+let nb_asteroids = 15
 
-let max_score = 1
+let max_score = 10
 
 let half_width = 500.
 
@@ -22,7 +22,7 @@ let objectif_radius = 20.
 
 let god_intervention = 0.00001
 
-let asteroid_mass = 100.
+let asteroid_mass = 1000.
 
 let asteroid_radius = 50.
 

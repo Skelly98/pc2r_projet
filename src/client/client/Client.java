@@ -28,7 +28,7 @@ public class Client {
 		try {
 			s = new Socket(args[0],Integer.parseInt(args[1]));
 			mover = new ObjectMover(arena, refresh_tickrate);
-			gw = new GameWindow(s, arena, players_scores, args[2], refresh_tickrate);
+			gw = new GameWindow(s, arena, args[2], refresh_tickrate);
 			window = new Thread(gw);
 			objMover = new Thread(mover);
 			cmdReceiver = new Thread(new CommandReceiver(s, arena, mover, gw, players_scores, args[2]));

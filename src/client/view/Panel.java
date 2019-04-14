@@ -13,14 +13,11 @@ import model.Vehicule;
 public class Panel extends JPanel {
 
   private Arena arena;
-  private int width;
-  private int height;
   private String player;
 
-  public Panel(Arena arena, String player, int width, int height) {
+  public Panel(Arena arena, String player) {
     this.arena = arena;
     this.player = player;
-    setBounds(0, 0, width, height);
     setBackground(Color.BLACK);
   }
 
@@ -38,8 +35,8 @@ public class Panel extends JPanel {
     /** Obstacles */
     g2D.setColor(Color.WHITE);
     for (Obstacle o : arena.getObstacles()) {
-      int[] obstacle = o.getPaintData();
-      g2D.drawOval(obstacle[0], obstacle[1], obstacle[2], obstacle[2]);
+      int[][] obstacle = o.getPaintDataPolygon();
+      g2D.drawPolygon(obstacle[0], obstacle[1], 12);
     }
 
     /** Players */

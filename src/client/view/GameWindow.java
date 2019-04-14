@@ -5,13 +5,11 @@ import javax.swing.Timer;
 import javax.swing.KeyStroke;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import java.awt.BorderLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.Socket;
-import java.util.HashMap;
 import model.Arena;
 import model.Vehicule;
 
@@ -20,7 +18,6 @@ public class GameWindow extends JFrame implements Runnable {
 
 	private Socket s;
 	private Arena arena;
-	private HashMap<String, Integer> players_scores;
 	private String player;
 	private PrintStream canalEcriture;
 	private Panel p;
@@ -29,14 +26,14 @@ public class GameWindow extends JFrame implements Runnable {
 	private int clock = 0;
 	private int countdown = 10;
 
-	public GameWindow(Socket s, Arena arena, HashMap<String, Integer> players_scores, String player, double refresh_tickrate) throws IOException {
+	public GameWindow(Socket s, Arena arena, String player, double refresh_tickrate) throws IOException {
+		super("Arène Vectorielle");
 		this.s = s;
 		this.arena = arena;
-		this.players_scores = players_scores;
 		this.player = player;
 		this.refresh_tickrate = refresh_tickrate;
 		canalEcriture = new PrintStream(s.getOutputStream());
-		p = new Panel(arena, player, (int) Arena.half_width * 2, (int) Arena.half_height * 2);
+		p = new Panel(arena, player);
 	}
 
 	public synchronized void setCountdown(int countdown) {
@@ -51,9 +48,8 @@ public class GameWindow extends JFrame implements Runnable {
 	public void run() {
 		/** window definition */
 		setName("Arenes Vectorielles");
-		setSize((int) Arena.half_width * 2, (int) Arena.half_height * 2);
+		setSize((int) Arena.half_width * 2, (int) Arena.half_height * 2 + 20);
 		add(p);
-		setLayout(new BorderLayout());
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
 
@@ -62,7 +58,7 @@ public class GameWindow extends JFrame implements Runnable {
   	ActionListener taskPerformer = new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
         p.repaint();
-				repaint();
+				//repaint();
 				if (thrust != 0 || clock != 0) {
 					send("NEWCOM/A" + (double) + clock * Vehicule.turnit + "T" + thrust * Vehicule.thrustit + "\n");
 					thrust = 0;

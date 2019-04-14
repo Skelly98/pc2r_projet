@@ -103,8 +103,8 @@ let server_service (chans,id) =
       end
 
 let game () =
+  make_asteroids ();
   while true do
-    make_asteroids ();
     (if (List.length (real_players ())) > 0 then starting := true);
     while (not !starting) do
       Thread.delay 1.
@@ -160,6 +160,10 @@ let game () =
     ended := false;
     Array.iter Arena.remove_object asteroids_ids;
     List.iter (fun ((_,_),p) -> p.score <- 0; Object.freeze Arena.objects.(p.ship_id)) (real_players ());
+    make_asteroids ();
+    (if !Values.compatibility_mode
+      then message (Command.FromServer.TICK_COMP(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ())))
+      else message (Command.FromServer.TICK(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ()), asteroids_vcoords ())));
     Values.phase := "attente"
   done
 

@@ -5,7 +5,11 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Collection;
+import java.util.stream.Collectors;
 import java.lang.Runnable;
 import model.Arena;
 import view.GameWindow;
@@ -28,7 +32,7 @@ public class CommandReceiver implements Runnable {
 		this.arena = arena;
 		this.mover = mover;
 		this.gw = gw;
-		this.players_scores = players_scores; new HashMap<String, Integer>();
+		this.players_scores = players_scores;
 		this.player = player;
 	}
 
@@ -56,21 +60,22 @@ public class CommandReceiver implements Runnable {
 						if (length > 5) {
 							gw.setCountdown(Integer.parseInt(arr[5]));
 						}
-						System.out.println("Bienvenue !\nPhase de la session : "+ arr[1]+ "\n Score: " + arr[2] + "\n Coordonnées de l'objectif : "+arr[3]);
+						System.out.println("Welcome!\nPhase: " + arr[1]);
+						printScores();
 						break;
 					case "DENIED" :
-						System.out.println("Connexion refusée");
+						System.out.println("Connexion denied.");
 						return;
 					case "NEWPLAYER" :
 						players_scores.put(arr[1], 0);
-						System.out.println("Le joueur "+ arr[1] +" s'est connecté");
+						System.out.println(arr[1] + " joined the game.");
 						break;
 					case "PLAYERLEFT" :
 						for (String s : arr)
 							System.out.println(s);
 						players_scores.remove(arr[1]);
 						arena.removeVehicule(arr[1]);
-						System.out.println("Le joueur "+ arr[1] +" s'est déconnecté");
+						System.out.println(arr[1] + " left the game.");
 						break;
 					case "SESSION" :
 						setPlayersCoords(arr[1]);
@@ -79,12 +84,13 @@ public class CommandReceiver implements Runnable {
 						setObstaclesCoords(arr[3]);
 						game_phase = true;
 						gw.setCountdown(0);
-						System.out.println("Session commencée.\nCoordonnées des véhicules : "+arr[1]+"\nCoordonnées de l'objectif : "+arr[2] );
+						System.out.println("Session started.");
 						break;
 					case "WINNER" :
 						game_phase = false;
+						arena.clear();
 						gw.setCountdown(10);
-						System.out.println("Session terminée.\nScores finaux : "+arr[1] );
+						System.out.println("Session ended.");
 						break;
 					case "TICK" :
 						setPlayersVcoords(arr[1]);
@@ -96,9 +102,9 @@ public class CommandReceiver implements Runnable {
 						setPlayers(arr[2]);
 						x_and_y = arr[1].split("[XY]");
 						arena.setObjectif(Double.parseDouble(x_and_y[1]), Double.parseDouble(x_and_y[2]));
-						System.out.println("Nouvel objectif : "+arr[1]+"\n Scores : "+arr[2]);
+						printScores();
 						break;
-					default : System.out.println("Commande  inexistante.");
+					default :;
 				}
 			}
 		}
@@ -113,6 +119,26 @@ public class CommandReceiver implements Runnable {
 			String [] name_and_score = players[i].split("[:]");
 			players_scores.put(name_and_score[0], Integer.parseInt(name_and_score[1]));
 		}
+	}
+
+	public void printScores() {
+		System.out.println("\n######## SCORES ########");
+		int line_len = 24;
+		List<Map.Entry<String, Integer>> scores = players_scores
+			.entrySet()
+			.stream()
+			.sorted(Map.Entry.comparingByValue((Integer a, Integer b) -> b - a))
+			.collect(Collectors.toList());
+		scores.forEach(item->{
+			String name = item.getKey();
+			String points = item.getValue().toString();
+			int len = name.length() + points.length();
+			for (int i = len; i < line_len - 4; i ++) {
+				name += " ";
+			}
+			System.out.println("# " + name + points + " #");
+		});
+		System.out.println("########################\n");
 	}
 
 	public void setPlayersCoords(String str) {
