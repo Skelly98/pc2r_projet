@@ -108,6 +108,8 @@ let server_service (chans,id) =
       end
 
 let game () =
+  let tick_before_send = int_of_float (Values.server_refresh_tickrate /.  Values.server_tickrate)
+  and tick_count = ref 0 in
   make_asteroids ();
   while true do
     (if (List.length (real_players ())) > 0 then starting := true);
@@ -151,9 +153,13 @@ let game () =
         then Thread.delay (wait_time)
         else print_endline "please decrease Values.server_tickrate");
       (** send message TICK to everyone *)
-      (if !Values.compatibility_mode
-        then message (Command.FromServer.TICK_COMP(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ())))
-        else message (Command.FromServer.TICK(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ()), asteroids_vcoords ())));
+      (if !tick_count = tick_before_send
+        then begin
+          (if !Values.compatibility_mode
+            then message (Command.FromServer.TICK_COMP(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ())))
+            else message (Command.FromServer.TICK(List.map (fun ((_,_),p) -> Player.vcoords p) (real_players ()), asteroids_vcoords ())));
+          tick_count := 0
+        end else tick_count := !tick_count + 1);
       (** flush everyone *)
       List.iter (fun ((_,out),_) -> flush out) (real_players ())
     done;

@@ -79,6 +79,7 @@ let collision_comp obj1 obj2 =
   Mutex.unlock obj1.mtx
 
 (** no interblocage as this is the only function using 2 mutex *)
+(** chaining float operations gives unexpected results, so we decompose everything *)
 let collision obj1 obj2 =
   Mutex.lock obj1.mtx;
   (if obj1.id <> obj2.id
@@ -123,7 +124,6 @@ let collision obj1 obj2 =
           obj1.speed_y <- new_speed_y_1;
           obj2.speed_x <- new_speed_x_2;
           obj2.speed_y <- new_speed_y_2
-
         end);
     end);
   Mutex.unlock obj2.mtx;

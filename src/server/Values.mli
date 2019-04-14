@@ -2,6 +2,8 @@
 
 val server_tickrate : float
 
+val server_refresh_tickrate : float
+
 (** the number of objects the server can manage *)
 val max_objects : int
 
@@ -28,8 +30,6 @@ val objectif_radius : float
 val asteroid_mass : float
 
 val asteroid_radius : float
-
-val god_intervention : float
 
 val phase : string ref
 

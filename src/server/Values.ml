@@ -1,5 +1,8 @@
 let server_tickrate = 60.
 
+(** use a multiple of server_tickrate would be better *)
+let server_refresh_tickrate = 10. *. server_tickrate
+
 let max_objects = 40
 
 let max_players = 20
@@ -21,8 +24,6 @@ let ship_mass = 100.
 let ship_radius = 10.
 
 let objectif_radius = 20.
-
-let god_intervention = 0.00001
 
 let asteroid_mass = 1000.
 
