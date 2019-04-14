@@ -8,6 +8,8 @@ let nb_asteroids = 15
 
 let max_score = 10
 
+let countdown = 10.
+
 let half_width = 500.
 
 let half_height = 500.

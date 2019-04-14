@@ -19,8 +19,8 @@ end
 module FromServer : sig
 
 type t =
-  |WELCOME_COMP of user * scores * coord * (float * float) list * int
-  |WELCOME of user * scores * coord * coords * int
+  |WELCOME_COMP of user * scores * coord * (float * float) list
+  |WELCOME of user * scores * coord * coords
   |DENIED
   |NEWPLAYER of user
   |PLAYERLEFT of user

@@ -52,14 +52,12 @@ public class CommandReceiver implements Runnable {
 					case "WELCOME":
 						if (arr[1].equals("jeu")) {
 							game_phase = true;
+							gw.setGamePhase(game_phase);
 						}
 						setPlayers(arr[2]);
 						String [] x_and_y = arr[3].split("[XY]");
 						arena.setVehiculeCoord(player, Double.parseDouble(x_and_y[1]), Double.parseDouble(x_and_y[2]));
 						setObstaclesCoords(arr[4]);
-						if (length > 5) {
-							gw.setCountdown(Integer.parseInt(arr[5]));
-						}
 						System.out.println("Welcome!\nPhase: " + arr[1]);
 						printScores();
 						break;
@@ -71,8 +69,6 @@ public class CommandReceiver implements Runnable {
 						System.out.println(arr[1] + " joined the game.");
 						break;
 					case "PLAYERLEFT" :
-						for (String s : arr)
-							System.out.println(s);
 						players_scores.remove(arr[1]);
 						arena.removeVehicule(arr[1]);
 						System.out.println(arr[1] + " left the game.");
@@ -83,13 +79,13 @@ public class CommandReceiver implements Runnable {
 						arena.setObjectif(Double.parseDouble(x_and_y[1]), Double.parseDouble(x_and_y[2]));
 						setObstaclesCoords(arr[3]);
 						game_phase = true;
-						gw.setCountdown(0);
+						gw.setGamePhase(game_phase);
 						System.out.println("Session started.");
 						break;
 					case "WINNER" :
 						game_phase = false;
 						arena.clear();
-						gw.setCountdown(10);
+						gw.setGamePhase(game_phase);
 						System.out.println("Session ended.");
 						break;
 					case "TICK" :

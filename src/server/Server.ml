@@ -8,8 +8,6 @@ let starting = ref false
 
 let ended = ref false
 
-let countdown = ref 10
-
 let max_players = Values.max_players
 
 let players = Array.make max_players ((stdin,stdout),Player.default) (** stdin and stdout for default chans *)
@@ -36,13 +34,12 @@ let message ?(id = (-1)) cmd =
   |(-1) -> List.iter (fun x -> output_string (snd (fst x)) (Command.FromServer.to_string cmd)) (real_players ())
   |id -> output_string (snd (fst players.(id))) (Command.FromServer.to_string cmd)
 
-let create_server port max_con =
+let create_server ip port max_con =
   let sock = Unix.socket Unix.PF_INET Unix.SOCK_STREAM 0
-  and addr = Unix.inet_addr_of_string "127.0.0.1"
-  in
-    Unix.bind sock (Unix.ADDR_INET(addr, port));
-    Unix.listen sock max_con ;
-    sock
+  and addr = if ip = "localhost" then Unix.inet_addr_loopback else (Unix.inet_addr_of_string ip) in
+  Unix.bind sock (Unix.ADDR_INET(addr, port));
+  Unix.listen sock max_con ;
+  sock
 
 let refresh_id () =
   let rec loop ind =
@@ -74,11 +71,19 @@ let server_service (chans,id) =
             players.(id) <- ((inchan,outchan), Player.create name);
             (if !Values.compatibility_mode
             then begin
-              message ~id:id (Command.FromServer.WELCOME_COMP(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords_comp (), !countdown));
-              if !Values.phase == "jeu" then message ~id:id (Command.FromServer.SESSION_COMP(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(Arena.objectif_id), asteroids_coords_comp ()))
+              message ~id:id (Command.FromServer.WELCOME_COMP(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords_comp ()));
+              if !Values.phase == "jeu"
+                then begin
+                  message ~id:id (Command.FromServer.SESSION_COMP(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(Arena.objectif_id), asteroids_coords_comp ()));
+                  message ~id:id (Command.FromServer.NEWOBJ(Object.coords Arena.objects.(Arena.objectif_id), scores ()))
+                end
             end else begin
-              message ~id:id (Command.FromServer.WELCOME(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords (), !countdown));
-              if !Values.phase == "jeu" then message ~id:id (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(Arena.objectif_id), asteroids_coords ()))
+              message ~id:id (Command.FromServer.WELCOME(name,(scores ()), Player.coords (snd players.(id)), asteroids_coords ()));
+              if !Values.phase == "jeu"
+                then begin
+                  message ~id:id (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(Arena.objectif_id), asteroids_coords ()));
+                  message ~id:id (Command.FromServer.NEWOBJ(Object.coords Arena.objects.(Arena.objectif_id), scores ()))
+                end
             end);
             message (Command.FromServer.NEWPLAYER(name));
             (** this flush may conflict with the one from thread game *)
@@ -109,11 +114,7 @@ let game () =
     while (not !starting) do
       Thread.delay 1.
     done;
-    countdown := 10;
-    for i = 0 to 9 do
-      Thread.delay 1.;
-      countdown := !countdown - 1
-    done;
+    Thread.delay Values.countdown;
     Values.phase := "jeu";
     message (Command.FromServer.SESSION(List.map (fun ((_,_),p) -> (p.name, Player.coords p)) (real_players ()), Object.coords Arena.objects.(Arena.objectif_id), asteroids_coords ()));
     while (not !ended) do
@@ -170,19 +171,21 @@ let game () =
 let _ =
   Random.self_init ();
   match Array.length Sys.argv with
-  |2 ->
+  |3 ->
   begin
-    let port = int_of_string Sys.argv.(1) in
-    let sock = create_server port 4 ; in
+    let ip = Sys.argv.(1)
+    and port = int_of_string Sys.argv.(2) in
+    let sock = create_server ip port max_players ; in
     ignore(Thread.create game ());
     server_process sock server_service
   end
-  |3 when Sys.argv.(2) = "-comp" ->
+  |4 when Sys.argv.(3) = "-comp" ->
   begin
     Values.compatibility_mode := true;
-    let port = int_of_string Sys.argv.(1) in
-    let sock = create_server port 4 ; in
+    let ip = Sys.argv.(1)
+    and port = int_of_string Sys.argv.(2) in
+    let sock = create_server ip port max_players ; in
     ignore(Thread.create game ());
     server_process sock server_service
   end
-  |_ -> print_endline "usage :\n\t- server <port>\n\t- server <port> -comp"
+  |_ -> print_endline "usage :\n\t- server <ip> <port>\n\t- server <port> -comp"

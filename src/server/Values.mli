@@ -11,6 +11,8 @@ val nb_asteroids : int
 
 val max_score : int
 
+val countdown : float
+
 val half_width : float
 
 val half_height : float

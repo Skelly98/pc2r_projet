@@ -18,12 +18,16 @@ Ce jeu est divisé en deux parties, Serveur et Client.
 Il suffit de faire make à la racine du jeu pour créer les exécutables dans bin.
 On peut alors lancer le serveur et les clients :\\
 \\
-Server <port>\\
+Server <ip> <port>\\
 java client.Client <ip> <port> <player\_name>\\
+\\
+exemple :\\
+./Server localhost 12345\\
+java client.Client localhost 12345 Testeur\\
 \\
 On peut également lancer le serveur dans un mode compatible respectant davantage le formulaire de base.\\
 \\
-Server <port> -comp\\
+Server <ip> <port> -comp\\
 \\
 La principale différence étant que le server au format compatible ne gère pas les collisions élastiques, les obstacles sont donc immobiles.
 

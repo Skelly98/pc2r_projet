@@ -24,7 +24,7 @@ public class GameWindow extends JFrame implements Runnable {
 	private Double refresh_tickrate;
 	private int thrust = 0;
 	private int clock = 0;
-	private int countdown = 10;
+	private boolean game_phase = false;
 
 	public GameWindow(Socket s, Arena arena, String player, double refresh_tickrate) throws IOException {
 		super("Arène Vectorielle");
@@ -36,8 +36,8 @@ public class GameWindow extends JFrame implements Runnable {
 		p = new Panel(arena, player);
 	}
 
-	public synchronized void setCountdown(int countdown) {
-		this.countdown = countdown;
+	public synchronized void setGamePhase(boolean game_phase) {
+		this.game_phase = game_phase;
 	}
 
 	private void send(String msg) {
@@ -58,7 +58,6 @@ public class GameWindow extends JFrame implements Runnable {
   	ActionListener taskPerformer = new ActionListener() {
       public void actionPerformed(ActionEvent evt) {
         p.repaint();
-				//repaint();
 				if (thrust != 0 || clock != 0) {
 					send("NEWCOM/A" + (double) + clock * Vehicule.turnit + "T" + thrust * Vehicule.thrustit + "\n");
 					thrust = 0;
@@ -76,7 +75,7 @@ public class GameWindow extends JFrame implements Runnable {
 		Action actionThrust = new AbstractAction() {
       public void actionPerformed(ActionEvent evt) {
 				Vehicule ship = arena.getPlayer(player);
-					if (countdown == 0) {
+					if (game_phase) {
 	          ship.thrust();
 						thrust++;
 				}
@@ -86,7 +85,7 @@ public class GameWindow extends JFrame implements Runnable {
 		Action actionClock = new AbstractAction() {
       public void actionPerformed(ActionEvent evt) {
 				Vehicule ship = arena.getPlayer(player);
-					if (countdown == 0) {
+					if (game_phase) {
 	          ship.clock();
 						clock++;
 				}
@@ -96,7 +95,7 @@ public class GameWindow extends JFrame implements Runnable {
 		Action actionAnticlock = new AbstractAction() {
       public void actionPerformed(ActionEvent evt) {
 				Vehicule ship = arena.getPlayer(player);
-					if (countdown == 0) {
+					if (game_phase) {
 	          ship.anticlock();
 						clock--;
 				}
